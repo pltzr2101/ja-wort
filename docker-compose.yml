@@ -1,0 +1,13 @@
+services:
+  ja-wort:
+    build: .
+    container_name: ja-wort
+    ports:
+      - "3000:3000"
+    environment:
+      - GUEST_PASSWORD=${GUEST_PASSWORD:?GUEST_PASSWORD fehlt}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD fehlt}
+      - SESSION_SECRET=${SESSION_SECRET:-}
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
