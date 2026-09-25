@@ -18,8 +18,7 @@ export default async function GatePage() {
   return (
     <main className="flex min-h-screen items-center justify-center px-6">
       <div className="w-full max-w-sm text-center">
-        <h1 className="font-serif text-5xl font-semibold text-accent">{dict.gate.title}</h1>
-        <p className="mt-3 text-muted">{dict.gate.subtitle}</p>
+        <p className="text-muted">{dict.gate.subtitle}</p>
         <div className="mt-4 flex justify-center">
           <LanguageToggle locale={locale} />
         </div>

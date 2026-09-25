@@ -18,7 +18,6 @@ export const dict = {
   de: {
     langName: "DE",
     gate: {
-      title: "JaWort",
       subtitle: "Bitte gib das Passwort ein, um die Seite zu sehen.",
       password: "Passwort",
       submit: "Eintreten",
@@ -72,7 +71,6 @@ export const dict = {
   ko: {
     langName: "한국어",
     gate: {
-      title: "JaWort",
       subtitle: "비밀번호를 입력해 주세요.",
       password: "비밀번호",
       submit: "입장",
