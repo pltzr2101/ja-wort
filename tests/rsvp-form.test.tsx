@@ -45,7 +45,7 @@ describe("RsvpForm", () => {
     await user.click(within(childrenGroup).getByRole("radio", { name: "Ja" }));
 
     expect(screen.getByLabelText(/Alter der Kinder/)).toBeInTheDocument();
-    expect(screen.getByText(/Hochstuehle und Kindermenues planen/)).toBeInTheDocument();
+    expect(screen.getByText(/Hochstühle und Kindermenüs planen/)).toBeInTheDocument();
   });
 
   it("sendet bei Zusage den vollstaendigen Payload", async () => {

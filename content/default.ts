@@ -89,7 +89,7 @@ export const sectionOrder: SectionType[] = [
 /** Deutscher Standard-Titel/Text der Beispiel-Text-Sektion ("Story"). */
 const DEFAULT_STORY_TITLE = "Unsere Geschichte";
 const DEFAULT_STORY_TEXT =
-  "Hier koennt ihr ein paar Worte ueber euch schreiben – wie ihr euch kennengelernt habt und warum ihr diesen Tag gemeinsam feiern moechtet.";
+  "Hier könnt ihr ein paar Worte über euch schreiben – wie ihr euch kennengelernt habt und warum ihr diesen Tag gemeinsam feiern möchtet.";
 
 /**
  * Standard-Sektionen: die Singleton-Sektionen in kanonischer Reihenfolge plus
@@ -180,7 +180,7 @@ export const defaultContentKo: SiteContent = {
     { question: "주차는 어디에 할 수 있나요?", answer: "성 정원 바로 옆에 주차장이 있습니다." },
     { question: "언제까지 회신하면 되나요?", answer: "2026년 8월 1일까지 부탁드립니다." },
   ],
-  rsvpTitle: "참석 여부",
+  rsvpTitle: "참석 여부를 알려주세요",
   rsvpSubtitle: "2026년 8월 1일까지 알려주세요.",
   contactTitle: "연락처",
   contactName: "",

@@ -55,6 +55,17 @@ describe("Contact", () => {
       />
     );
     expect(screen.getByText("전화")).toBeInTheDocument();
-    expect(screen.getByText("이메일")).toBeInTheDocument();
+    expect(screen.getByText("카카오톡")).toBeInTheDocument();
+    expect(screen.getByText("계좌번호")).toBeInTheDocument();
+  });
+
+  it("rendert im Koreanischen keine Links", () => {
+    render(
+      <Contact
+        content={content({ contactName: "지민", contactPhone: "+82 10 1234 5678" })}
+        locale="ko"
+      />
+    );
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
   });
 });

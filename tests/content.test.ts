@@ -236,7 +236,7 @@ describe("translateKoreanContent", () => {
     expect(translated.heroTitle).toBe("결혼합니다!");
     expect(translated.heroSubtitle).toBe("안나 & 요나스 · 2026년 9월 12일");
     expect(translated.locationName).toBe("무스터슈타트 성 정원");
-    expect(translated.rsvpTitle).toBe("참석 여부");
+    expect(translated.rsvpTitle).toBe("참석 여부를 알려주세요");
     expect(translated.rsvpSubtitle).toBe("2026년 8월 1일까지 알려주세요.");
   });
 
