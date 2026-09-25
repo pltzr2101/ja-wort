@@ -38,7 +38,7 @@ jobs:
       # Multi-Arch-Build (z. B. arm64) QEMU-Emulation braeuchte.
       # provenance/sbom: false, damit kein zusaetzliches Attestation-Manifest
       # entsteht (verwirrt sonst aeltere Docker-Clients beim Pull).
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           push: true
