@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { defaultContent, defaultContentKo, type SiteContent } from "@/content/default";
 import { getContent, mergeContent, normalizeSections, saveContent } from "@/lib/content";
+import { migrateKoreanContent, translateKoreanContent } from "@/lib/content-migration";
 import { getDb } from "@/lib/db";
 
 describe("mergeContent", () => {
@@ -220,5 +221,103 @@ describe("Kontakt-Sektion", () => {
     expect(getContent("de").contactEmail).toBe("julian@example.com");
     expect(getContent("ko").contactName).toBe("지민");
     expect(getContent("ko").contactEmail).toBe("jimin@example.com");
+  });
+});
+
+describe("translateKoreanContent", () => {
+  it("uebersetzt deutsche Standard-Titel", () => {
+    const translated = translateKoreanContent({
+      ...defaultContent,
+    } as Partial<SiteContent>);
+
+    expect(translated.scheduleTitle).toBe("일정");
+    expect(translated.faqTitle).toBe("FAQ");
+    expect(translated.mapTitle).toBe("오시는 길");
+    expect(translated.heroTitle).toBe("결혼합니다!");
+    expect(translated.heroSubtitle).toBe("안나 & 요나스 · 2026년 9월 12일");
+    expect(translated.locationName).toBe("무스터슈타트 성 정원");
+    expect(translated.rsvpTitle).toBe("참석 여부");
+    expect(translated.rsvpSubtitle).toBe("2026년 8월 1일까지 알려주세요.");
+  });
+
+  it("uebersetzt auch den alten deutschen FAQ-Titel", () => {
+    const translated = translateKoreanContent({ faqTitle: "Haeufige Fragen" });
+    expect(translated.faqTitle).toBe("FAQ");
+  });
+
+  it("uebersetzt den Standard-Ablauf und die FAQ-Liste", () => {
+    const translated = translateKoreanContent({
+      schedule: defaultContent.schedule,
+      faq: defaultContent.faq,
+    });
+
+    expect(translated.schedule).toEqual(defaultContentKo.schedule);
+    expect(translated.faq).toEqual(defaultContentKo.faq);
+  });
+
+  it("uebersetzt den Standard-Story-Textblock", () => {
+    const translated = translateKoreanContent({ sections: defaultContent.sections });
+    const text = translated.sections?.find((s) => s.type === "text");
+    const koStory = defaultContentKo.sections.find((s) => s.type === "text");
+    expect(text?.title).toBe(koStory?.title);
+    expect(text?.text).toBe(koStory?.text);
+  });
+
+  it("laesst individualisierte Werte unangetastet", () => {
+    const translated = translateKoreanContent({
+      scheduleTitle: "우리의 하루",
+      faqTitle: "질문과 답변",
+      schedule: [{ time: "10:00", title: "특별한 순간", description: "맞춤" }],
+    });
+
+    expect(translated.scheduleTitle).toBe("우리의 하루");
+    expect(translated.faqTitle).toBe("질문과 답변");
+    expect(translated.schedule).toEqual([
+      { time: "10:00", title: "특별한 순간", description: "맞춤" },
+    ]);
+  });
+});
+
+describe("migrateKoreanContent (DB)", () => {
+  beforeEach(() => {
+    getDb().prepare("DELETE FROM content").run();
+  });
+
+  afterEach(() => {
+    getDb().prepare("DELETE FROM content").run();
+  });
+
+  it("uebersetzt eine gespeicherte deutsche KO-Fassung", () => {
+    // Deutsche Inhalte, wie sie frueher via "Aus Deutsch uebernehmen" nach KO
+    // kopiert wurden.
+    getDb()
+      .prepare("INSERT INTO content (key, value_json) VALUES ('site:ko', ?)")
+      .run(JSON.stringify(defaultContent));
+
+    migrateKoreanContent(getDb());
+
+    const ko = getContent("ko");
+    expect(ko.scheduleTitle).toBe("일정");
+    expect(ko.faqTitle).toBe("FAQ");
+    expect(ko.schedule).toEqual(defaultContentKo.schedule);
+    expect(ko.faq).toEqual(defaultContentKo.faq);
+  });
+
+  it("ist idempotent und veraendert die updated_at nicht erneut", () => {
+    getDb()
+      .prepare("INSERT INTO content (key, value_json) VALUES ('site:ko', ?)")
+      .run(JSON.stringify(defaultContent));
+
+    migrateKoreanContent(getDb());
+    const afterFirst = getDb()
+      .prepare("SELECT value_json, updated_at FROM content WHERE key = 'site:ko'")
+      .get() as { value_json: string; updated_at: string };
+
+    migrateKoreanContent(getDb());
+    const afterSecond = getDb()
+      .prepare("SELECT value_json, updated_at FROM content WHERE key = 'site:ko'")
+      .get() as { value_json: string; updated_at: string };
+
+    expect(afterSecond.value_json).toBe(afterFirst.value_json);
   });
 });
