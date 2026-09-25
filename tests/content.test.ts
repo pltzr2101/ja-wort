@@ -1,7 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { defaultContent, defaultContentKo, type SiteContent } from "@/content/default";
 import { getContent, mergeContent, normalizeSections, saveContent } from "@/lib/content";
-import { migrateKoreanContent, translateKoreanContent } from "@/lib/content-migration";
+import {
+  fixGermanUmlauts,
+  migrateGermanUmlauts,
+  migrateKoreanContent,
+  translateKoreanContent,
+} from "@/lib/content-migration";
 import { getDb } from "@/lib/db";
 
 describe("mergeContent", () => {
@@ -325,6 +330,70 @@ describe("migrateKoreanContent (DB)", () => {
     const afterSecond = getDb()
       .prepare("SELECT value_json, updated_at FROM content WHERE key = 'site:ko'")
       .get() as { value_json: string; updated_at: string };
+
+    expect(afterSecond.value_json).toBe(afterFirst.value_json);
+  });
+});
+
+describe("fixGermanUmlauts", () => {
+  it("ersetzt den alten FAQ-Titel mit ausgeschriebenem Umlaut", () => {
+    const fixed = fixGermanUmlauts({ faqTitle: "Haeufige Fragen" });
+    expect(fixed.faqTitle).toBe("Häufige Fragen");
+  });
+
+  it("laesst bereits korrekte oder individualisierte Werte unangetastet", () => {
+    expect(fixGermanUmlauts({ faqTitle: "FAQ" }).faqTitle).toBe("FAQ");
+    expect(fixGermanUmlauts({ faqTitle: "Häufige Fragen" }).faqTitle).toBe("Häufige Fragen");
+    expect(fixGermanUmlauts({ faqTitle: "Eigene Überschrift" }).faqTitle).toBe(
+      "Eigene Überschrift"
+    );
+  });
+
+  it("korrigiert den alten Story-Text in Text-Sektionen", () => {
+    const legacyText =
+      "Hier koennt ihr ein paar Worte ueber euch schreiben – wie ihr euch kennengelernt habt und warum ihr diesen Tag gemeinsam feiern moechtet.";
+    const fixed = fixGermanUmlauts({
+      sections: [{ key: "text-story", type: "text", enabled: true, text: legacyText }],
+    });
+    const section = fixed.sections?.find((s) => s.type === "text");
+    expect(section?.text).toContain("könnt");
+    expect(section?.text).not.toContain("koennt");
+  });
+});
+
+describe("migrateGermanUmlauts (DB)", () => {
+  beforeEach(() => {
+    getDb().prepare("DELETE FROM content").run();
+  });
+
+  afterEach(() => {
+    getDb().prepare("DELETE FROM content").run();
+  });
+
+  it("korrigiert den gespeicherten deutschen FAQ-Titel", () => {
+    getDb()
+      .prepare("INSERT INTO content (key, value_json) VALUES ('site:de', ?)")
+      .run(JSON.stringify({ ...defaultContent, faqTitle: "Haeufige Fragen" }));
+
+    migrateGermanUmlauts(getDb());
+
+    expect(getContent("de").faqTitle).toBe("Häufige Fragen");
+  });
+
+  it("ist idempotent", () => {
+    getDb()
+      .prepare("INSERT INTO content (key, value_json) VALUES ('site:de', ?)")
+      .run(JSON.stringify({ ...defaultContent, faqTitle: "Haeufige Fragen" }));
+
+    migrateGermanUmlauts(getDb());
+    const afterFirst = getDb()
+      .prepare("SELECT value_json FROM content WHERE key = 'site:de'")
+      .get() as { value_json: string };
+
+    migrateGermanUmlauts(getDb());
+    const afterSecond = getDb()
+      .prepare("SELECT value_json FROM content WHERE key = 'site:de'")
+      .get() as { value_json: string };
 
     expect(afterSecond.value_json).toBe(afterFirst.value_json);
   });

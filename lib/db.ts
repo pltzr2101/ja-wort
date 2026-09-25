@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import fs from "node:fs";
-import { migrateKoreanContent } from "./content-migration";
+import { migrateGermanUmlauts, migrateKoreanContent } from "./content-migration";
 import { DB_PATH, DATA_DIR } from "./paths";
 
 let db: Database.Database | null = null;
@@ -51,6 +51,7 @@ function migrate(database: Database.Database): void {
   migrateRsvpColumns(database);
   migrateContentRows(database);
   migrateKoreanContent(database);
+  migrateGermanUmlauts(database);
 }
 
 /**

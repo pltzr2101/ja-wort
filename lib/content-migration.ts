@@ -104,3 +104,73 @@ export function migrateKoreanContent(database: Database.Database): void {
     )
     .run(translated);
 }
+
+/**
+ * Bekannte deutsche Legacy-Werte mit ausgeschriebenen Umlauten (ae/oe/ue),
+ * die in aelteren Datenbank-Staenden gespeichert sein koennen. Diese werden
+ * durch die korrekte Schreibweise ersetzt; individualisierte Werte bleiben
+ * unangetastet.
+ */
+const GERMAN_UMLAUT_FIXES: Record<string, string> = {
+  // Der deutsche FAQ-Titel war vor der Vereinheitlichung auf "FAQ" deutsch.
+  "Haeufige Fragen": "Häufige Fragen",
+};
+
+/** Alter deutscher Story-Text (ausgeschriebene Umlaute). */
+const LEGACY_STORY_TEXT =
+  "Hier koennt ihr ein paar Worte ueber euch schreiben – wie ihr euch kennengelernt habt und warum ihr diesen Tag gemeinsam feiern moechtet.";
+
+/**
+ * Ersetzt in einem gespeicherten deutschen Inhaltssatz ausgeschriebene Umlaute
+ * in bekannten Legacy-Werten durch die korrekte Schreibweise.
+ */
+export function fixGermanUmlauts(parsed: Partial<SiteContent>): Partial<SiteContent> {
+  const out: JsonObject = { ...(parsed as JsonObject) };
+
+  for (const field of STRING_FIELDS) {
+    const key = field as string;
+    const value = out[key];
+    if (typeof value === "string" && value in GERMAN_UMLAUT_FIXES) {
+      out[key] = GERMAN_UMLAUT_FIXES[value];
+    }
+  }
+
+  const deStoryText = defaultContent.sections.find((section) => section.type === "text")?.text;
+  if (Array.isArray(out.sections) && deStoryText) {
+    out.sections = (out.sections as JsonObject[]).map((section) => {
+      if (section.type !== "text" || section.text !== LEGACY_STORY_TEXT) return section;
+      return { ...section, text: deStoryText };
+    });
+  }
+
+  return out as Partial<SiteContent>;
+}
+
+/**
+ * Korrigiert die gespeicherte deutsche Inhaltszeile (key = "site:de"), falls
+ * sie noch ausgeschriebene Umlaute enthaelt (z. B. den alten FAQ-Titel
+ * "Haeufige Fragen"). Idempotent: laeuft bei jedem Start, schreibt aber nur,
+ * wenn sich tatsaechlich etwas geaendert hat.
+ */
+export function migrateGermanUmlauts(database: Database.Database): void {
+  const row = database.prepare("SELECT value_json FROM content WHERE key = 'site:de'").get() as
+    { value_json: string } | undefined;
+  if (!row) return;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(row.value_json);
+  } catch {
+    return;
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return;
+
+  const fixed = JSON.stringify(fixGermanUmlauts(parsed as Partial<SiteContent>));
+  if (fixed === row.value_json) return;
+
+  database
+    .prepare(
+      "UPDATE content SET value_json = ?, updated_at = CURRENT_TIMESTAMP WHERE key = 'site:de'"
+    )
+    .run(fixed);
+}
