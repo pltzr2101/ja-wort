@@ -53,10 +53,10 @@ bezogen und per Portainer deployt. Es ist kein lokaler Build noetig.
    - _Stacks → Add stack → Name:_ `ja-wort`
    - _Build method:_ **Web editor**, YAML aus `docker-compose.yml` einfügen
    - _Environment variables:_ `GUEST_PASSWORD` (Pflicht, wenn das Gaeste-Gate aktiv
-     ist), `GUEST_GATE_ENABLED` (optional, Default `true`; `false` schaltet das
-     Passwort-Gate ab), `ADMIN_PASSWORD` (Pflicht), `SESSION_SECRET` (optional, leer =
-     wird automatisch erzeugt und in `./data` persistiert), `APP_PORT` (optional,
-     Default `8095`)
+     ist), `GUEST_GATE_ENABLED` (optional, Default `true`; `false` macht Website,
+     Bilder und RSVP-Formular oeffentlich – der Admin-Bereich bleibt geschuetzt),
+     `ADMIN_PASSWORD` (Pflicht), `SESSION_SECRET` (optional, leer = wird automatisch
+     erzeugt und in `./data` persistiert), `APP_PORT` (optional, Default `8095`)
    - _Deploy the stack_
 
 4. **Port-Konflikt-Warnung:** Auf einem LXC, auf dem bereits Open WebUI läuft, ist

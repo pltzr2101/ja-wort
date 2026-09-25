@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isGuestGateEnabled } from "@/lib/auth";
 import { requireAdmin, requireAnySession } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { deleteRsvp } from "@/lib/rsvps";
 import { rsvpSchema } from "@/lib/validation";
 
-/** Nimmt eine RSVP-Antwort entgegen (nur angemeldete Gaeste). */
+/**
+ * Nimmt eine RSVP-Antwort entgegen. Ist das Gaeste-Gate aktiv, nur fuer
+ * angemeldete Gaeste; bei deaktiviertem Gate (GUEST_GATE_ENABLED=false)
+ * kann jeder eine Antwort senden.
+ */
 export async function POST(req: NextRequest) {
   const limit = rateLimit(`rsvp:${clientKey(req)}`, 10, 60 * 60 * 1000);
   if (!limit.ok) {
@@ -15,7 +20,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (!requireAnySession(req)) {
+  if (isGuestGateEnabled() && !requireAnySession(req)) {
     return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   }
 
