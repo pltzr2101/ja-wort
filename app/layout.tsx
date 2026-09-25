@@ -69,7 +69,6 @@ const koreanFont = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "JaWort – Unsere Hochzeit",
   description: "Eine passwortgeschuetzte Hochzeits-Website.",
   robots: { index: false, follow: false },
 };
