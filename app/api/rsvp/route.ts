@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireGuest } from "@/lib/api";
+import { requireAnySession } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { rsvpSchema } from "@/lib/validation";
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  if (!requireGuest(req)) {
+  if (!requireAnySession(req)) {
     return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   }
 

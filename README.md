@@ -122,7 +122,7 @@ Im Admin-Bereich:
 
 - **Anmeldungen** – Liste aller RSVPs + `CSV exportieren` (importierbar in Google Sheets/Excel)
 - **Inhalte** – Theme, Texte, Ablauf, Karten-URL, FAQ, Sektionen an/aus
-- **Galerie** – Bilder hochladen (JPG/PNG/WebP, max. 5 MB) und loeschen
+- **Galerie** – Bilder hochladen (JPG/PNG/WebP, max. 15 MB) und loeschen
 
 ---
 

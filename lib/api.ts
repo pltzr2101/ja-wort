@@ -15,6 +15,21 @@ export function requireAdmin(req: NextRequest): boolean {
 }
 
 /**
+ * Akzeptiert jede gueltige Session (Gast ODER Admin).
+ *
+ * Konsistent zum oeffentlichen `(site)`-Layout, das beiden Rollen den Zugriff
+ * erlaubt (`kind !== null`). Noetig z. B. fuer das RSVP-Formular: Ein Admin,
+ * der die oeffentliche Seite ansieht, darf die Anmeldung ebenfalls absenden –
+ * ein reiner `requireGuest`-Check wuerde ihn faelschlich mit 401 abweisen.
+ */
+export function requireAnySession(req: NextRequest): boolean {
+  return (
+    verifySession(req.cookies.get("guest_session")?.value)?.kind === "guest" ||
+    verifySession(req.cookies.get("admin_session")?.value)?.kind === "admin"
+  );
+}
+
+/**
  * Ermittelt, ob die urspruengliche Anfrage ueber HTTPS lief.
  *
  * Hinter Cloudflare/Reverse-Proxy terminiert der Proxy TLS und setzt

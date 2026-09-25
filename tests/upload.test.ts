@@ -39,7 +39,16 @@ describe("validateImageFile", () => {
 
   it("lehnt zu grosse Dateien ab", () => {
     const big = Buffer.alloc(MAX_UPLOAD_BYTES + 1);
-    expect(validateImageFile("image/jpeg", big)).toContain("5 MB");
+    expect(validateImageFile("image/jpeg", big)).toContain("15 MB");
+  });
+
+  it("akzeptiert Dateien knapp unter dem Limit", () => {
+    const jpeg = Buffer.alloc(MAX_UPLOAD_BYTES - 1);
+    jpeg[0] = 0xff;
+    jpeg[1] = 0xd8;
+    jpeg[2] = 0xff;
+    jpeg[3] = 0xe0;
+    expect(validateImageFile("image/jpeg", jpeg)).toBeNull();
   });
 
   it("lehnt unerlaubte MIME-Typen ab", () => {
