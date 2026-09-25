@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminPassword } from "@/lib/auth";
 import { createSession } from "@/lib/session";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
+import { isSecureRequest } from "@/lib/api";
 
 const COOKIE_TTL = 60 * 60 * 24 * 30; // 30 Tage
 
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   res.cookies.set("admin_session", createSession("admin"), {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: isSecureRequest(req),
     path: "/",
     maxAge: COOKIE_TTL,
   });

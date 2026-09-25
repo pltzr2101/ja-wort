@@ -60,14 +60,16 @@ bezogen und per Portainer deployt. Es ist kein lokaler Build noetig.
 4. **Port-Konflikt-Warnung:** Auf einem LXC, auf dem bereits Open WebUI läuft, ist
    Port **3000 belegt**. Der Host-Port wird über `APP_PORT` gesteuert (Default `8095`).
 
-5. **HTTPS ist für den Login zwingend:** Der Container läuft mit
-   `NODE_ENV=production`, wodurch alle Session-Cookies mit dem `Secure`-Flag
-   gesetzt werden. Ein Aufruf über `http://<LXC-IP>:<APP_PORT>` führt daher zu
-   einem stummen Login-Fehlschlag (man landet wieder im Gäste-Gate). Verifiziert
-   werden muss über die Cloudflare-Domain (HTTPS) oder einen HTTPS-Tunnel.
+5. **HTTPS für den Login empfohlen:** Die Session-Cookies werden anhand des
+   `X-Forwarded-Proto`-Headers (den Cloudflare setzt) mit dem `Secure`-Flag
+   versehen. Hinter Cloudflare (orange Wolke, HTTPS) ist damit alles korrekt
+   verschlüsselt. Bei direktem HTTP-Zugriff auf den LXC wird das `Secure`-Flag
+   weggelassen, damit der Login auch dort funktioniert – dann werden die
+   Passwörter allerdings **unverschlüsselt** übertragen.
 
-   > ⚠️ **Warnung:** Ohne HTTPS funktioniert die Anmeldung nicht – weder für
-   > Gäste noch für den Admin-Bereich.
+   > ⚠️ **Empfehlung:** Verifiziere über die Cloudflare-Domain (HTTPS, orange
+   > Wolke aktiv) oder einen HTTPS-Tunnel. Nur so sind Gäste- und
+   > Admin-Passwort geschützt.
 
    Cloudflare-Einrichtung (einmalig): Domain anlegen, `A`-Record auf die
    öffentliche IP des LXC zeigen lassen, Proxy (orange Wolke) aktivieren.
