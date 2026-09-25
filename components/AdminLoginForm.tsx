@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 /** Anmeldeformular fuer den Admin-Bereich. */
 export default function AdminLoginForm() {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ export default function AdminLoginForm() {
         return;
       }
 
-      window.location.href = "/admin/dashboard";
+      router.push("/admin/dashboard");
     } catch {
       setError("Netzwerkfehler. Bitte versuche es erneut.");
       setStatus("idle");

@@ -65,7 +65,11 @@ export function saveImage(buffer: Buffer, type: ImageType): string {
   const extension = EXTENSION_BY_TYPE[type];
   const filename = `${crypto.randomBytes(16).toString("hex")}.${extension}`;
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-  fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer);
+  // Uploads liegen im Laufzeit-Datenverzeichnis (Docker-Volume), nicht im
+  // Build-Output. Der dynamische Pfad darf daher nicht in das Standalone-
+  // Tracing einfliessen (sonst wuerde das ganze Projekt inkl. public/ mit
+  // deployt).
+  fs.writeFileSync(path.join(/* turbopackIgnore: true */ UPLOADS_DIR, filename), buffer);
   return filename;
 }
 

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
 /** Anmeldeformular fuer Gaeste (gemeinsames Passwort). */
 export default function GateForm({ locale }: { locale: Locale }) {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading">("idle");
   const [error, setError] = useState<string | null>(null);
@@ -29,7 +31,7 @@ export default function GateForm({ locale }: { locale: Locale }) {
         return;
       }
 
-      window.location.href = "/";
+      router.push("/");
     } catch {
       setError(dict.networkError);
       setStatus("idle");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   type FaqItem,
@@ -68,14 +68,21 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
   const [content, setContent] = useState<SiteContent>(initialDe);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
-
   // Sprache oder Server-Daten synchron halten. `initialDe`/`initialKo` aendern
   // sich nach einem Speichern (router.refresh) oder nach einer Navigation;
   // dann muss der lokale Zustand auf den aktuellen Inhalt der Sprache gesetzt
   // werden (behebt u. a. das "Verschwinden" frisch gespeicherter Bild-Sektionen).
-  useEffect(() => {
+  // Anpassung waehrend des Renderns statt in einem Effekt (React-Doku-Muster
+  // "state during render"), um kaskadierende Renders zu vermeiden.
+  const [syncKey, setSyncKey] = useState({ locale, initialDe, initialKo });
+  if (
+    syncKey.locale !== locale ||
+    syncKey.initialDe !== initialDe ||
+    syncKey.initialKo !== initialKo
+  ) {
+    setSyncKey({ locale, initialDe, initialKo });
     setContent(locale === "de" ? initialDe : initialKo);
-  }, [locale, initialDe, initialKo]);
+  }
 
   function setField<K extends keyof SiteContent>(key: K, value: SiteContent[K]) {
     setContent((prev) => ({ ...prev, [key]: value }));
