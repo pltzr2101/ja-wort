@@ -39,7 +39,7 @@ describe("validateImageFile", () => {
 
   it("lehnt zu grosse Dateien ab", () => {
     const big = Buffer.alloc(MAX_UPLOAD_BYTES + 1);
-    expect(validateImageFile("image/jpeg", big)).toContain("15 MB");
+    expect(validateImageFile("image/jpeg", big)).toContain("5 MB");
   });
 
   it("akzeptiert Dateien knapp unter dem Limit", () => {

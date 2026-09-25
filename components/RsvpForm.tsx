@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 interface FormState {
   name: string;
@@ -32,10 +33,11 @@ const labelClass = "mb-2 block text-sm font-medium text-muted";
 const radioClass = "h-4 w-4 accent-[var(--accent)]";
 
 /** RSVP-Formular mit bedingter Anzeige der Felder. */
-export default function RsvpForm() {
+export default function RsvpForm({ locale }: { locale: Locale }) {
   const [form, setForm] = useState<FormState>(initialState);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+  const dict = getDictionary(locale).rsvp;
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -69,14 +71,14 @@ export default function RsvpForm() {
 
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Etwas ist schiefgelaufen. Bitte versuche es erneut.");
+        setError(data.error ?? dict.error);
         setStatus("error");
         return;
       }
 
       setStatus("success");
     } catch {
-      setError("Netzwerkfehler. Bitte versuche es erneut.");
+      setError(dict.networkError);
       setStatus("error");
     }
   }
@@ -84,8 +86,8 @@ export default function RsvpForm() {
   if (status === "success") {
     return (
       <div className="mx-auto max-w-xl rounded-xl border border-border bg-surface p-8 text-center">
-        <h3 className="font-serif text-2xl font-semibold text-accent">Vielen Dank!</h3>
-        <p className="mt-3 text-muted">Deine Antwort wurde gespeichert. Wir freuen uns auf euch!</p>
+        <h3 className="font-serif text-2xl font-semibold text-accent">{dict.success}</h3>
+        <p className="mt-3 text-muted">{dict.successText}</p>
       </div>
     );
   }
@@ -107,7 +109,7 @@ export default function RsvpForm() {
 
       <div>
         <label htmlFor="name" className={labelClass}>
-          Vor- und Nachname <span className="text-accent">*</span>
+          {dict.name} <span className="text-accent">*</span>
         </label>
         <input
           id="name"
@@ -116,13 +118,13 @@ export default function RsvpForm() {
           value={form.name}
           onChange={(e) => set("name", e.target.value)}
           className={fieldClass}
-          placeholder="Vor- und Nachname"
+          placeholder={dict.namePlaceholder}
         />
       </div>
 
       <div>
         <label htmlFor="attending" className={labelClass}>
-          Zu- oder Absage <span className="text-accent">*</span>
+          {dict.attending} <span className="text-accent">*</span>
         </label>
         <select
           id="attending"
@@ -132,10 +134,10 @@ export default function RsvpForm() {
           className={fieldClass}
         >
           <option value="" disabled>
-            Bitte waehlen
+            {dict.attendingPlaceholder}
           </option>
-          <option value="yes">Ich/Wir kommen gerne</option>
-          <option value="no">Ich/Wir muessen leider absagen</option>
+          <option value="yes">{dict.attendingYes}</option>
+          <option value="no">{dict.attendingNo}</option>
         </select>
       </div>
 
@@ -143,7 +145,7 @@ export default function RsvpForm() {
         <>
           <div>
             <label htmlFor="guests" className={labelClass}>
-              Personenzahl <span className="text-accent">*</span>
+              {dict.guests} <span className="text-accent">*</span>
             </label>
             <select
               id="guests"
@@ -153,7 +155,7 @@ export default function RsvpForm() {
               className={fieldClass}
             >
               <option value="" disabled>
-                Bitte waehlen
+                {dict.attendingPlaceholder}
               </option>
               {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
@@ -165,7 +167,7 @@ export default function RsvpForm() {
 
           <fieldset>
             <legend className={labelClass}>
-              Sind Kinder unter den Personen? <span className="text-accent">*</span>
+              {dict.hasChildren} <span className="text-accent">*</span>
             </legend>
             <div className="flex gap-6">
               <label className="flex items-center gap-2">
@@ -177,7 +179,7 @@ export default function RsvpForm() {
                   onChange={() => set("hasChildren", "yes")}
                   className={radioClass}
                 />
-                Ja
+                {dict.yes}
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -188,7 +190,7 @@ export default function RsvpForm() {
                   onChange={() => set("hasChildren", "no")}
                   className={radioClass}
                 />
-                Nein
+                {dict.no}
               </label>
             </div>
           </fieldset>
@@ -196,7 +198,7 @@ export default function RsvpForm() {
           {form.hasChildren === "yes" && (
             <div>
               <label htmlFor="childrenAges" className={labelClass}>
-                Alter der Kinder
+                {dict.childrenAges}
               </label>
               <input
                 id="childrenAges"
@@ -204,19 +206,14 @@ export default function RsvpForm() {
                 value={form.childrenAges}
                 onChange={(e) => set("childrenAges", e.target.value)}
                 className={fieldClass}
-                placeholder="z. B. 2 und 5 Jahre"
+                placeholder={dict.childrenAgesPlaceholder}
               />
-              <p className="mt-2 text-sm text-muted">
-                Bitte gib hier das Alter der Kinder an, damit wir ggf. Hochstuehle und Kindermenues
-                planen koennen.
-              </p>
+              <p className="mt-2 text-sm text-muted">{dict.childrenAgesHint}</p>
             </div>
           )}
 
           <fieldset>
-            <legend className={labelClass}>
-              Benoetigt ihr Unterstützung beim Finden einer passenden Unterkunft?
-            </legend>
+            <legend className={labelClass}>{dict.accommodation}</legend>
             <div className="flex gap-6">
               <label className="flex items-center gap-2">
                 <input
@@ -227,7 +224,7 @@ export default function RsvpForm() {
                   onChange={() => set("needsAccommodation", "yes")}
                   className={radioClass}
                 />
-                Ja
+                {dict.yes}
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -238,7 +235,7 @@ export default function RsvpForm() {
                   onChange={() => set("needsAccommodation", "no")}
                   className={radioClass}
                 />
-                Nein
+                {dict.no}
               </label>
             </div>
           </fieldset>
@@ -247,7 +244,7 @@ export default function RsvpForm() {
 
       <div>
         <label htmlFor="note" className={labelClass}>
-          Nachricht oder Kontakt (optional)
+          {dict.note}
         </label>
         <textarea
           id="note"
@@ -255,7 +252,7 @@ export default function RsvpForm() {
           value={form.note}
           onChange={(e) => set("note", e.target.value)}
           className={fieldClass}
-          placeholder="E-Mail oder Telefon fuer Rueckfragen, Essenswuensche, ..."
+          placeholder={dict.notePlaceholder}
         />
       </div>
 
@@ -270,7 +267,7 @@ export default function RsvpForm() {
         disabled={status === "loading"}
         className="w-full rounded-full bg-accent px-8 py-3 text-sm font-medium uppercase tracking-widest text-white transition hover:opacity-90 disabled:opacity-60"
       >
-        {status === "loading" ? "Wird gesendet..." : "Absenden"}
+        {status === "loading" ? dict.sending : dict.submit}
       </button>
     </form>
   );

@@ -1,19 +1,30 @@
 import type { SiteContent } from "@/content/default";
+import type { Locale } from "@/lib/i18n";
+import { getDictionary } from "@/lib/i18n";
 import type { ImageRow } from "@/lib/images";
 
-/** Formatiert ein ISO-Datum (YYYY-MM-DD) als deutsches Langdatum. */
-function formatDate(iso: string): string {
+/** Formatiert ein ISO-Datum (YYYY-MM-DD) als Langdatum in der Zielsprache. */
+function formatDate(iso: string, locale: Locale): string {
   const date = new Date(`${iso}T00:00:00`);
   if (Number.isNaN(date.getTime())) return iso;
-  return new Intl.DateTimeFormat("de-DE", {
+  return new Intl.DateTimeFormat(locale === "ko" ? "ko-KR" : "de-DE", {
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(date);
 }
 
-export default function Hero({ content, images }: { content: SiteContent; images: ImageRow[] }) {
+export default function Hero({
+  content,
+  images,
+  locale,
+}: {
+  content: SiteContent;
+  images: ImageRow[];
+  locale: Locale;
+}) {
   const background = images[0] ? `/api/uploads/${images[0].filename}` : null;
+  const dict = getDictionary(locale);
 
   return (
     <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden">
@@ -36,7 +47,7 @@ export default function Hero({ content, images }: { content: SiteContent; images
         }`}
       >
         <p className="font-serif text-xl italic opacity-90 md:text-2xl">
-          {formatDate(content.weddingDate)}
+          {formatDate(content.weddingDate, locale)}
         </p>
         <h1 className="font-serif mt-4 text-5xl font-semibold leading-tight md:text-7xl">
           {content.coupleNames}
@@ -46,7 +57,7 @@ export default function Hero({ content, images }: { content: SiteContent; images
           href="#rsvp"
           className="mt-10 inline-block rounded-full bg-accent px-8 py-3 text-sm font-medium uppercase tracking-widest text-white transition hover:opacity-90"
         >
-          Zur Zu-/Absage
+          {dict.hero.cta}
         </a>
       </div>
     </section>

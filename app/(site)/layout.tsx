@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getContent } from "@/lib/content";
 import { getTheme } from "@/lib/themes";
 import { getSessionKind } from "@/lib/server-auth";
+import { getLocale } from "@/lib/locale";
 
 export const dynamic = "force-dynamic";
 
@@ -10,13 +11,19 @@ export const dynamic = "force-dynamic";
  * Layout fuer die oeffentliche Hochzeits-Seite.
  * - Gaeste-Gate: ohne gueltige Session wird auf /gate weitergeleitet.
  * - Setzt die Theme-Farben als CSS-Variablen auf dem Seiten-Wrapper.
+ * - In der koreanischen Sprachvariante wird die Schrift auf die
+ *   koreanische Font-Variable umgestellt.
  */
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const kind = await getSessionKind();
   if (kind === null) redirect("/gate");
 
-  const content = getContent();
+  const locale = await getLocale();
+  const content = getContent(locale);
   const theme = getTheme(content.theme);
+
+  const displayFont = locale === "ko" ? "var(--font-ko)" : theme.fonts.display;
+  const bodyFont = locale === "ko" ? "var(--font-ko)" : theme.fonts.body;
 
   const vars = {
     "--accent": theme.colors.accent,
@@ -26,8 +33,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     "--muted": theme.colors.muted,
     "--surface": theme.colors.surface,
     "--border": theme.colors.border,
-    "--display-font": theme.fonts.display,
-    "--body-font": theme.fonts.body,
+    "--display-font": displayFont,
+    "--body-font": bodyFont,
   } as CSSProperties;
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 interface Remaining {
   days: number;
@@ -21,8 +22,9 @@ function diff(target: Date): Remaining | null {
 }
 
 /** Live-Countdown bis zum Hochzeitstag (Client-Komponente). */
-export default function Countdown({ date }: { date: string }) {
+export default function Countdown({ date, locale }: { date: string; locale: Locale }) {
   const [remaining, setRemaining] = useState<Remaining | null>(null);
+  const dict = getDictionary(locale);
 
   useEffect(() => {
     const target = new Date(`${date}T00:00:00`);
@@ -37,10 +39,10 @@ export default function Countdown({ date }: { date: string }) {
   }
 
   const units = [
-    { value: remaining.days, label: "Tage" },
-    { value: remaining.hours, label: "Stunden" },
-    { value: remaining.minutes, label: "Minuten" },
-    { value: remaining.seconds, label: "Sekunden" },
+    { value: remaining.days, label: dict.countdown.days },
+    { value: remaining.hours, label: dict.countdown.hours },
+    { value: remaining.minutes, label: dict.countdown.minutes },
+    { value: remaining.seconds, label: dict.countdown.seconds },
   ];
 
   return (

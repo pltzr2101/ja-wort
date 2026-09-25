@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter, Lora, Playfair_Display } from "next/font/google";
+import { Cormorant_Garamond, Inter, Lora, Noto_Sans_KR, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const displayFont = Cormorant_Garamond({
@@ -30,6 +30,17 @@ const bodySerifFont = Lora({
   display: "swap",
 });
 
+// Koreanische Schrift fuer die "ko"-Sprachvariante. Hangul-Glyphen werden ueber
+// den Unicode-Range nachgeladen; preload: false vermeidet das Vorab-Laden des
+// grossen Zeichensatzes auf deutschen Seiten.
+const koreanFont = Noto_Sans_KR({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-ko",
+  display: "swap",
+  preload: false,
+});
+
 export const metadata: Metadata = {
   title: "JaWort – Unsere Hochzeit",
   description: "Eine passwortgeschuetzte Hochzeits-Website.",
@@ -49,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="de"
-      className={`${displayFont.variable} ${displayAltFont.variable} ${bodyFont.variable} ${bodySerifFont.variable}`}
+      className={`${displayFont.variable} ${displayAltFont.variable} ${bodyFont.variable} ${bodySerifFont.variable} ${koreanFont.variable}`}
     >
       <body className="font-sans antialiased">{children}</body>
     </html>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 export interface GalleryImage {
   src: string;
@@ -8,14 +9,17 @@ export interface GalleryImage {
 }
 
 /** Bildergalerie mit einfachem Lightbox-Dialog. */
-export default function Gallery({ images }: { images: GalleryImage[] }) {
+export default function Gallery({ images, locale }: { images: GalleryImage[]; locale: Locale }) {
   const [selected, setSelected] = useState<number | null>(null);
+  const dict = getDictionary(locale);
 
   if (images.length === 0) return null;
 
   return (
     <section id="gallery" className="mx-auto max-w-6xl px-6 py-24">
-      <h2 className="text-center font-serif text-4xl font-semibold md:text-5xl">Galerie</h2>
+      <h2 className="text-center font-serif text-4xl font-semibold md:text-5xl">
+        {dict.gallery.title}
+      </h2>
       <div className="mx-auto mt-2 h-px w-16 bg-accent" />
       <div className="mt-12 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         {images.map((image, index) => (

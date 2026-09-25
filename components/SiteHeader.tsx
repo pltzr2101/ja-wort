@@ -1,24 +1,24 @@
 import type { SectionType, SiteContent } from "@/content/default";
+import { getDictionary, type Locale } from "@/lib/i18n";
+import LanguageToggle from "./LanguageToggle";
 
 interface Props {
   content: SiteContent;
+  locale: Locale;
 }
 
 /** Anker-Navigation fuer die Singleton-Sektionen (ohne Hero/Bild). */
-const NAV_LABELS: Partial<Record<SectionType, string>> = {
-  story: "Story",
-  gallery: "Galerie",
-  schedule: "Ablauf",
-  rsvp: "Zu-/Absage",
-  map: "Anfahrt",
-  faq: "FAQ",
-};
+const NAV_TYPES: SectionType[] = ["story", "gallery", "schedule", "rsvp", "map", "faq"];
 
-/** Sticky-Kopfbereich mit Paarnamen und Anker-Navigation. */
-export default function SiteHeader({ content }: Props) {
+/** Sticky-Kopfbereich mit Paarnamen, Sprach-Umschalter und Anker-Navigation. */
+export default function SiteHeader({ content, locale }: Props) {
+  const dict = getDictionary(locale);
   const items = content.sections
-    .filter((section) => section.enabled && NAV_LABELS[section.type] !== undefined)
-    .map((section) => ({ id: section.type, label: NAV_LABELS[section.type] as string }));
+    .filter((section) => section.enabled && NAV_TYPES.includes(section.type))
+    .map((section) => ({
+      id: section.type,
+      label: dict.nav[section.type as keyof typeof dict.nav],
+    }));
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
@@ -41,10 +41,21 @@ export default function SiteHeader({ content }: Props) {
               type="submit"
               className="text-sm uppercase tracking-widest text-muted transition hover:text-foreground"
             >
-              Logout
+              {dict.nav.logout}
             </button>
           </form>
         </nav>
+        <div className="flex items-center gap-4">
+          <LanguageToggle locale={locale} />
+          <form action="/api/gate/logout" method="post" className="md:hidden">
+            <button
+              type="submit"
+              className="text-sm uppercase tracking-widest text-muted transition hover:text-foreground"
+            >
+              {dict.nav.logout}
+            </button>
+          </form>
+        </div>
       </div>
     </header>
   );

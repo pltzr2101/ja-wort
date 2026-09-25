@@ -1,5 +1,10 @@
 import type { ThemeId } from "@/lib/themes";
 
+/** Unterstuetzte Sprachen der Website. */
+export type Locale = "de" | "ko";
+
+export const LOCALES: Locale[] = ["de", "ko"];
+
 export type SectionType =
   "hero" | "countdown" | "story" | "gallery" | "schedule" | "rsvp" | "map" | "faq" | "image";
 

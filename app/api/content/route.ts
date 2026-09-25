@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { defaultContent, type SiteContent } from "@/content/default";
+import { defaultContent, type Locale, type SiteContent } from "@/content/default";
 import { requireAdmin } from "@/lib/api";
 import { getContent, mergeContent, saveContent } from "@/lib/content";
 
-/** Liefert die aktuellen Inhalte (nur Admin). */
+/** Liest die Sprache aus dem Query-Parameter (Default: de). */
+function parseLocale(req: NextRequest): Locale {
+  return req.nextUrl.searchParams.get("locale") === "ko" ? "ko" : "de";
+}
+
+/** Liefert die aktuellen Inhalte einer Sprache (nur Admin). */
 export async function GET(req: NextRequest) {
   if (!requireAdmin(req)) {
     return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
   }
-  return NextResponse.json(getContent());
+  return NextResponse.json(getContent(parseLocale(req)));
 }
 
-/** Speichert die Inhalte (nur Admin). Merged mit Defaults, damit nie kaputt. */
+/** Speichert die Inhalte einer Sprache (nur Admin). Merged mit Defaults. */
 export async function PUT(req: NextRequest) {
   if (!requireAdmin(req)) {
     return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
@@ -22,7 +27,8 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: "Ungueltige Anfrage." }, { status: 400 });
   }
 
+  const locale = parseLocale(req);
   const merged = mergeContent(defaultContent, body);
-  saveContent(merged);
-  return NextResponse.json({ ok: true, content: merged });
+  saveContent(merged, locale);
+  return NextResponse.json({ ok: true, content: getContent(locale) });
 }

@@ -1,11 +1,17 @@
 import {
   defaultContent,
   sectionOrder,
+  type Locale,
   type SectionType,
   type SiteContent,
   type SiteSection,
 } from "@/content/default";
 import { getDb } from "./db";
+
+/** DB-Key eines Sprach-Inhaltssatzes. */
+function rowKey(locale: Locale): string {
+  return `site:${locale}`;
+}
 
 const SECTION_TYPES: SectionType[] = [...sectionOrder, "image"];
 
@@ -92,11 +98,15 @@ export function mergeContent(base: SiteContent, override: Partial<SiteContent>):
   };
 }
 
-/** Liest die aktuellen Inhalte (Defaults + DB-Ueberschreibungen). */
-export function getContent(): SiteContent {
+/**
+ * Liest einen Sprach-Inhaltssatz (Defaults + DB-Ueberschreibungen).
+ * Faellt auf die Defaults zurueck, wenn noch nichts gespeichert wurde.
+ */
+function readContent(locale: Locale): SiteContent {
   try {
-    const row = getDb().prepare("SELECT value_json FROM content WHERE key = 'site'").get() as
-      { value_json: string } | undefined;
+    const row = getDb()
+      .prepare("SELECT value_json FROM content WHERE key = ?")
+      .get(rowKey(locale)) as { value_json: string } | undefined;
 
     if (!row) return defaultContent;
 
@@ -107,12 +117,30 @@ export function getContent(): SiteContent {
   }
 }
 
-/** Speichert die Inhalte als JSON in der DB (Upsert). */
-export function saveContent(content: SiteContent): void {
+/**
+ * Liest die Inhalte fuer eine Sprache. Theme, Titelbild-Fokus und Sektionen
+ * sind sprachuebergreifend geteilt und kommen immer aus dem deutschen
+ * Inhaltssatz, damit Design und Aufbau in beiden Sprachen identisch bleiben.
+ */
+export function getContent(locale: Locale = "de"): SiteContent {
+  const content = readContent(locale);
+  if (locale === "de") return content;
+
+  const de = readContent("de");
+  return {
+    ...content,
+    theme: de.theme,
+    heroObjectPosition: de.heroObjectPosition,
+    sections: de.sections,
+  };
+}
+
+/** Speichert einen Sprach-Inhaltssatz als JSON in der DB (Upsert). */
+export function saveContent(content: SiteContent, locale: Locale = "de"): void {
   getDb()
     .prepare(
-      `INSERT INTO content (key, value_json) VALUES ('site', ?)
+      `INSERT INTO content (key, value_json) VALUES (?, ?)
        ON CONFLICT(key) DO UPDATE SET value_json = excluded.value_json, updated_at = CURRENT_TIMESTAMP`
     )
-    .run(JSON.stringify(content));
+    .run(rowKey(locale), JSON.stringify(content));
 }

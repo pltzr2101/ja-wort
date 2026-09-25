@@ -122,7 +122,7 @@ Im Admin-Bereich:
 
 - **Anmeldungen** – Liste aller RSVPs + `CSV exportieren` (importierbar in Google Sheets/Excel); einzelne Anmeldungen per rotem ✕ (mit Bestaetigung) loeschen
 - **Inhalte** – Theme, Texte, Ablauf, Karten-URL, FAQ sowie Sektionen an/aus, per Drag & Drop umsortieren und beliebig viele zusaetzliche „Bild“-Sektionen einfuegen; jede Bild-Sektion hat eigene Steuerung fuer Bildauswahl, Bildunterschrift, Bildfokus (object-position) und Darstellung (Zuschneiden/Komplett einpassen) – der Bildfokus (object-position) fuer das Titelbild sitzt im Feld „Bildfokus (Titelbild)“
-- **Galerie** – Bilder hochladen (JPG/PNG/WebP, max. 15 MB), loeschen und per Drag & Drop umsortieren (das erste Bild ist das Titelbild)
+- **Galerie** – Bilder hochladen (JPG/PNG/WebP, max. 5 MB), loeschen und per Drag & Drop umsortieren (das erste Bild ist das Titelbild)
 
 ---
 

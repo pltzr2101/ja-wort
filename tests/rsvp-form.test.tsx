@@ -21,7 +21,7 @@ describe("RsvpForm", () => {
 
   it("blendet bedingte Felder erst bei Zusage ein", async () => {
     const user = userEvent.setup();
-    render(<RsvpForm />);
+    render(<RsvpForm locale="de" />);
 
     expect(screen.getByLabelText(/Vor- und Nachname/)).toBeInTheDocument();
     expect(screen.queryByLabelText(/Personenzahl/)).not.toBeInTheDocument();
@@ -37,7 +37,7 @@ describe("RsvpForm", () => {
 
   it("blendet das Kinder-Alter erst bei 'Kinder = Ja' ein", async () => {
     const user = userEvent.setup();
-    render(<RsvpForm />);
+    render(<RsvpForm locale="de" />);
 
     await user.selectOptions(screen.getByLabelText(/Zu- oder Absage/), "yes");
 
@@ -50,7 +50,7 @@ describe("RsvpForm", () => {
 
   it("sendet bei Zusage den vollstaendigen Payload", async () => {
     const user = userEvent.setup();
-    render(<RsvpForm />);
+    render(<RsvpForm locale="de" />);
 
     await user.type(screen.getByLabelText(/Vor- und Nachname/), "Max Mustermann");
     await user.selectOptions(screen.getByLabelText(/Zu- oder Absage/), "yes");
@@ -81,7 +81,7 @@ describe("RsvpForm", () => {
 
   it("sendet bei Absage keine bedingten Felder", async () => {
     const user = userEvent.setup();
-    render(<RsvpForm />);
+    render(<RsvpForm locale="de" />);
 
     await user.type(screen.getByLabelText(/Vor- und Nachname/), "Erika Beispiel");
     await user.selectOptions(screen.getByLabelText(/Zu- oder Absage/), "no");

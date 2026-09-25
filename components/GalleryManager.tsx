@@ -99,7 +99,7 @@ export default function GalleryManager({ initial }: Props) {
         <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
           <div>
             <label htmlFor="file" className="mb-1 block text-sm font-medium text-muted">
-              Bild (JPG, PNG oder WebP, max. 15 MB)
+              Bild (JPG, PNG oder WebP, max. 5 MB)
             </label>
             <input
               id="file"

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { UPLOADS_DIR } from "./paths";
 
-export const MAX_UPLOAD_BYTES = 15 * 1024 * 1024; // 15 MB
+export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export type ImageType = "jpg" | "png" | "webp";
@@ -52,7 +52,7 @@ export function detectImageType(buffer: Buffer): ImageType | null {
  */
 export function validateImageFile(mime: string, buffer: Buffer): string | null {
   if (buffer.length === 0) return "Die Datei ist leer.";
-  if (buffer.length > MAX_UPLOAD_BYTES) return "Die Datei ist groesser als 15 MB.";
+  if (buffer.length > MAX_UPLOAD_BYTES) return "Die Datei ist groesser als 5 MB.";
   if (!ALLOWED_MIME.has(mime)) return "Nur JPG, PNG oder WebP sind erlaubt.";
   if (detectImageType(buffer) === null) return "Die Datei ist kein gueltiges Bild.";
   return null;

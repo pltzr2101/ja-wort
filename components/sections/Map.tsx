@@ -1,6 +1,9 @@
 import type { SiteContent } from "@/content/default";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
-export default function Map({ content }: { content: SiteContent }) {
+export default function Map({ content, locale }: { content: SiteContent; locale: Locale }) {
+  const dict = getDictionary(locale);
+
   return (
     <section id="map" className="mx-auto max-w-6xl px-6 py-24">
       <h2 className="text-center font-serif text-4xl font-semibold md:text-5xl">
@@ -10,7 +13,7 @@ export default function Map({ content }: { content: SiteContent }) {
       <p className="mt-6 text-center text-lg text-muted">{content.locationName}</p>
       <div className="mt-8 overflow-hidden rounded-lg border border-border shadow-sm">
         <iframe
-          title="Karte der Location"
+          title={dict.map.iframeTitle}
           src={content.mapEmbedUrl}
           className="h-[420px] w-full"
           loading="lazy"

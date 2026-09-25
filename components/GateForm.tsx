@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 /** Anmeldeformular fuer Gaeste (gemeinsames Passwort). */
-export default function GateForm() {
+export default function GateForm({ locale }: { locale: Locale }) {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "loading">("idle");
   const [error, setError] = useState<string | null>(null);
+  const dict = getDictionary(locale).gate;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -22,14 +24,14 @@ export default function GateForm() {
 
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        setError(data.error ?? "Falsches Passwort.");
+        setError(data.error ?? dict.error);
         setStatus("idle");
         return;
       }
 
       window.location.href = "/";
     } catch {
-      setError("Netzwerkfehler. Bitte versuche es erneut.");
+      setError(dict.networkError);
       setStatus("idle");
     }
   }
@@ -38,7 +40,7 @@ export default function GateForm() {
     <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-6">
       <div>
         <label htmlFor="password" className="mb-2 block text-sm font-medium text-muted">
-          Passwort
+          {dict.password}
         </label>
         <input
           id="password"
@@ -62,7 +64,7 @@ export default function GateForm() {
         disabled={status === "loading"}
         className="w-full rounded-full bg-accent px-8 py-3 text-sm font-medium uppercase tracking-widest text-white transition hover:opacity-90 disabled:opacity-60"
       >
-        {status === "loading" ? "Bitte warten..." : "Eintreten"}
+        {status === "loading" ? dict.waiting : dict.submit}
       </button>
     </form>
   );

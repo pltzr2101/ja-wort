@@ -47,4 +47,23 @@ function migrate(database: Database.Database): void {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+  migrateContentRows(database);
+}
+
+/**
+ * Migriert den alten einzelnen Inhaltssatz (key = "site") in den deutschen
+ * Sprach-Inhaltssatz (key = "site:de"). Idempotent: laeuft nur, wenn der
+ * alte Key noch vorhanden und der neue noch nicht belegt ist.
+ */
+function migrateContentRows(database: Database.Database): void {
+  const hasDe = database.prepare("SELECT 1 FROM content WHERE key = 'site:de'").get();
+  if (hasDe) return;
+
+  const old = database.prepare("SELECT value_json FROM content WHERE key = 'site'").get() as
+    { value_json: string } | undefined;
+  if (!old) return;
+
+  database
+    .prepare("INSERT OR IGNORE INTO content (key, value_json) VALUES ('site:de', ?)")
+    .run(old.value_json);
 }

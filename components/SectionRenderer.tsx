@@ -1,4 +1,5 @@
 import type { SiteContent } from "@/content/default";
+import type { Locale } from "@/lib/i18n";
 import type { ImageRow } from "@/lib/images";
 import Hero from "./sections/Hero";
 import Countdown from "./sections/Countdown";
@@ -13,10 +14,11 @@ import ImageSection from "./sections/ImageSection";
 interface Props {
   content: SiteContent;
   images: ImageRow[];
+  locale: Locale;
 }
 
 /** Rendert alle aktivierten Sektionen in der konfigurierten Reihenfolge. */
-export default function SectionRenderer({ content, images }: Props) {
+export default function SectionRenderer({ content, images, locale }: Props) {
   const galleryImages = images.map((image) => ({
     src: `/api/uploads/${image.filename}`,
     caption: image.caption,
@@ -29,19 +31,19 @@ export default function SectionRenderer({ content, images }: Props) {
         .map((section) => {
           switch (section.type) {
             case "hero":
-              return <Hero key={section.key} content={content} images={images} />;
+              return <Hero key={section.key} content={content} images={images} locale={locale} />;
             case "countdown":
-              return <Countdown key={section.key} date={content.weddingDate} />;
+              return <Countdown key={section.key} date={content.weddingDate} locale={locale} />;
             case "story":
               return <Story key={section.key} content={content} />;
             case "gallery":
-              return <Gallery key={section.key} images={galleryImages} />;
+              return <Gallery key={section.key} images={galleryImages} locale={locale} />;
             case "schedule":
               return <Schedule key={section.key} content={content} />;
             case "rsvp":
-              return <RsvpSection key={section.key} content={content} />;
+              return <RsvpSection key={section.key} content={content} locale={locale} />;
             case "map":
-              return <Map key={section.key} content={content} />;
+              return <Map key={section.key} content={content} locale={locale} />;
             case "faq":
               return <Faq key={section.key} content={content} />;
             case "image":

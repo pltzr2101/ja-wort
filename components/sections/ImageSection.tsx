@@ -24,6 +24,8 @@ export default function ImageSection({ section, images }: Props) {
       <img
         src={`/api/uploads/${image.filename}`}
         alt={section.caption ?? image.caption ?? "Bild"}
+        loading="lazy"
+        decoding="async"
         style={{ objectPosition: position }}
         className={`h-[50vh] w-full md:h-[70vh] ${
           fit === "contain" ? "object-contain" : "object-cover"
