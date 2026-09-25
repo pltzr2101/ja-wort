@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------
 # 1) Abhaengigkeiten installieren
 # ---------------------------------------------------------------------------
-FROM node:22-bookworm-slim AS deps
+FROM node:25-bookworm-slim AS deps
 WORKDIR /app
 # Build-Werkzeuge als Fallback, falls better-sqlite3 kein vorgefertigtes
 # Binary fuer die Plattform hat und lokal kompiliert werden muss.
@@ -16,7 +16,7 @@ RUN npm ci
 # ---------------------------------------------------------------------------
 # 2) Anwendung bauen (Standalone-Output)
 # ---------------------------------------------------------------------------
-FROM node:22-bookworm-slim AS builder
+FROM node:25-bookworm-slim AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
@@ -26,7 +26,7 @@ RUN npm run build
 # ---------------------------------------------------------------------------
 # 3) Schlankes Laufzeit-Image
 # ---------------------------------------------------------------------------
-FROM node:22-bookworm-slim AS runner
+FROM node:25-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
