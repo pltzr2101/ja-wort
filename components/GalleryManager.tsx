@@ -13,6 +13,7 @@ export default function GalleryManager({ initial }: Props) {
   const [caption, setCaption] = useState("");
   const [status, setStatus] = useState<"idle" | "loading">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
@@ -47,6 +48,29 @@ export default function GalleryManager({ initial }: Props) {
       setError("Netzwerkfehler. Bitte versuche es erneut.");
     } finally {
       setStatus("idle");
+    }
+  }
+
+  function move(from: number, to: number) {
+    const next = [...images];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setImages(next);
+    persistOrder(next);
+  }
+
+  async function persistOrder(list: ImageRow[]) {
+    try {
+      const res = await fetch("/api/uploads", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: list.map((image) => image.id) }),
+      });
+      if (!res.ok) {
+        setError("Umsortieren fehlgeschlagen.");
+      }
+    } catch {
+      setError("Netzwerkfehler. Bitte versuche es erneut.");
     }
   }
 
@@ -118,32 +142,74 @@ export default function GalleryManager({ initial }: Props) {
           Noch keine Bilder hochgeladen.
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {images.map((image) => (
-            <div
-              key={image.id}
-              className="overflow-hidden rounded-lg border border-border bg-surface"
-            >
-              <img
-                src={`/api/uploads/${image.filename}`}
-                alt={image.caption ?? "Bild"}
-                className="aspect-[4/3] w-full object-cover"
-              />
-              <div className="flex items-center justify-between gap-2 px-3 py-2">
-                <span className="truncate text-xs text-muted">
-                  {image.caption ?? image.filename}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(image.id)}
-                  className="shrink-0 text-xs text-red-600 hover:underline"
-                >
-                  Loeschen
-                </button>
+        <>
+          <p className="text-sm text-muted">
+            Das <span className="font-medium">erste Bild</span> wird als Titelbild verwendet.
+            Reihenfolge per Drag &amp; Drop oder mit den Pfeilen aendern.
+          </p>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {images.map((image, index) => (
+              <div
+                key={image.id}
+                draggable
+                onDragStart={() => setDraggedIndex(index)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (draggedIndex !== null && draggedIndex !== index) {
+                    move(draggedIndex, index);
+                  }
+                  setDraggedIndex(null);
+                }}
+                className={`overflow-hidden rounded-lg border border-border bg-surface ${
+                  draggedIndex === index ? "opacity-50" : ""
+                }`}
+              >
+                <img
+                  src={`/api/uploads/${image.filename}`}
+                  alt={image.caption ?? "Bild"}
+                  className="aspect-[4/3] w-full object-cover"
+                />
+                <div className="flex items-center justify-between gap-2 px-3 py-2">
+                  {index === 0 && (
+                    <span className="shrink-0 rounded bg-accent px-2 py-0.5 text-[10px] uppercase tracking-widest text-white">
+                      Titelbild
+                    </span>
+                  )}
+                  <span className="truncate text-xs text-muted">
+                    {image.caption ?? image.filename}
+                  </span>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => move(index, index - 1)}
+                      disabled={index === 0}
+                      className="rounded border border-border px-1.5 text-muted hover:text-foreground disabled:opacity-30"
+                      aria-label="Nach oben"
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => move(index, index + 1)}
+                      disabled={index === images.length - 1}
+                      className="rounded border border-border px-1.5 text-muted hover:text-foreground disabled:opacity-30"
+                      aria-label="Nach unten"
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(image.id)}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      Loeschen
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

@@ -1,4 +1,5 @@
 import { getRsvps } from "@/lib/rsvps";
+import RsvpTable from "@/components/RsvpTable";
 
 export const dynamic = "force-dynamic";
 
@@ -37,60 +38,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {rsvps.length === 0 ? (
-        <p className="rounded-lg border border-border bg-surface px-6 py-10 text-center text-muted">
-          Noch keine Anmeldungen eingegangen.
-        </p>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-surface">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border text-muted">
-              <tr>
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Antwort</th>
-                <th className="px-4 py-3 font-medium">Personen</th>
-                <th className="px-4 py-3 font-medium">Kinder</th>
-                <th className="px-4 py-3 font-medium">Unterkunft</th>
-                <th className="px-4 py-3 font-medium">Notiz</th>
-                <th className="px-4 py-3 font-medium">Eingegangen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rsvps.map((rsvp) => (
-                <tr key={rsvp.id} className="border-b border-border last:border-0">
-                  <td className="px-4 py-3">{rsvp.name}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={
-                        rsvp.attending ? "font-medium text-green-600" : "font-medium text-red-600"
-                      }
-                    >
-                      {rsvp.attending ? "Zusage" : "Absage"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">{rsvp.guests ?? "–"}</td>
-                  <td className="px-4 py-3">
-                    {rsvp.hasChildren === null
-                      ? "–"
-                      : rsvp.hasChildren
-                        ? `Ja (${rsvp.childrenAges || "Alter o. A."})`
-                        : "Nein"}
-                  </td>
-                  <td className="px-4 py-3">
-                    {rsvp.needsAccommodation === null
-                      ? "–"
-                      : rsvp.needsAccommodation
-                        ? "Ja"
-                        : "Nein"}
-                  </td>
-                  <td className="max-w-xs px-4 py-3">{rsvp.note ?? "–"}</td>
-                  <td className="px-4 py-3 text-muted">{rsvp.createdAt}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <RsvpTable initial={rsvps} />
     </div>
   );
 }

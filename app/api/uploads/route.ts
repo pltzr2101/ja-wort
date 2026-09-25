@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/api";
-import { addImage, deleteImage, getImages } from "@/lib/images";
+import { addImage, deleteImage, getImages, reorderImages } from "@/lib/images";
 import { detectImageType, saveImage, validateImageFile } from "@/lib/upload";
 
 /** Listet alle Galerie-Bilder (nur Admin). */
@@ -43,6 +43,21 @@ export async function POST(req: NextRequest) {
   const image = addImage(filename, typeof caption === "string" ? caption.trim() || null : null);
 
   return NextResponse.json({ ok: true, image });
+}
+
+/** Sortiert die Galerie-Bilder neu (nur Admin). */
+export async function PATCH(req: NextRequest) {
+  if (!requireAdmin(req)) {
+    return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  }
+
+  const body = (await req.json().catch(() => null)) as { ids?: unknown } | null;
+  if (!body || !Array.isArray(body.ids) || !body.ids.every((id) => typeof id === "number")) {
+    return NextResponse.json({ error: "Ungueltige Anfrage." }, { status: 400 });
+  }
+
+  reorderImages(body.ids as number[]);
+  return NextResponse.json({ ok: true });
 }
 
 /** Loescht ein Bild anhand seiner ID (nur Admin). */

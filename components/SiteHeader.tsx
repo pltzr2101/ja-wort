@@ -1,22 +1,24 @@
-import type { SiteContent, SectionId } from "@/content/default";
+import type { SectionType, SiteContent } from "@/content/default";
 
 interface Props {
   content: SiteContent;
 }
 
-const NAV_ITEMS: { id: SectionId; label: string }[] = [
-  { id: "story", label: "Story" },
-  { id: "gallery", label: "Galerie" },
-  { id: "schedule", label: "Ablauf" },
-  { id: "rsvp", label: "Zu-/Absage" },
-  { id: "map", label: "Anfahrt" },
-  { id: "faq", label: "FAQ" },
-];
+/** Anker-Navigation fuer die Singleton-Sektionen (ohne Hero/Bild). */
+const NAV_LABELS: Partial<Record<SectionType, string>> = {
+  story: "Story",
+  gallery: "Galerie",
+  schedule: "Ablauf",
+  rsvp: "Zu-/Absage",
+  map: "Anfahrt",
+  faq: "FAQ",
+};
 
 /** Sticky-Kopfbereich mit Paarnamen und Anker-Navigation. */
 export default function SiteHeader({ content }: Props) {
-  const enabled = new Set<SectionId>(content.sections.filter((s) => s.enabled).map((s) => s.id));
-  const items = NAV_ITEMS.filter((item) => enabled.has(item.id));
+  const items = content.sections
+    .filter((section) => section.enabled && NAV_LABELS[section.type] !== undefined)
+    .map((section) => ({ id: section.type, label: NAV_LABELS[section.type] as string }));
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">

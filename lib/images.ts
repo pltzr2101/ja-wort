@@ -32,6 +32,24 @@ export function addImage(filename: string, caption: string | null): ImageRow {
   };
 }
 
+/**
+ * Setzt die Reihenfolge der Galerie-Bilder neu. `orderedIds` enthaelt alle
+ * Bild-IDs in der gewuenschchten Reihenfolge; deren `sort_order` wird in einer
+ * Transaktion auf den jeweiligen Index gesetzt. Unbekannte IDs werden ignoriert.
+ * Liefert `false`, wenn die Liste leer ist.
+ */
+export function reorderImages(orderedIds: number[]): boolean {
+  if (orderedIds.length === 0) return false;
+
+  const db = getDb();
+  const update = db.prepare("UPDATE images SET sort_order = ? WHERE id = ?");
+  const apply = db.transaction((ids: number[]) => {
+    ids.forEach((id, index) => update.run(index, id));
+  });
+  apply(orderedIds);
+  return true;
+}
+
 /** Loescht einen Bild-Eintrag inklusive Datei. */
 export function deleteImage(id: number): boolean {
   const row = getDb().prepare("SELECT filename FROM images WHERE id = ?").get(id) as

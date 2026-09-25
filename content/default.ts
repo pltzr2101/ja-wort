@@ -1,7 +1,7 @@
 import type { ThemeId } from "@/lib/themes";
 
-export type SectionId =
-  "hero" | "countdown" | "story" | "gallery" | "schedule" | "rsvp" | "map" | "faq";
+export type SectionType =
+  "hero" | "countdown" | "story" | "gallery" | "schedule" | "rsvp" | "map" | "faq" | "image";
 
 export interface ScheduleItem {
   time: string;
@@ -14,9 +14,17 @@ export interface FaqItem {
   answer: string;
 }
 
-export interface SectionToggle {
-  id: SectionId;
+/**
+ * Eine (aktivierbare) Sektion der Website. Singleton-Sektionen (hero, story, ...)
+ * haben eine eindeutige `key` gleich dem `type`; `image`-Sektionen sind beliebig
+ * oft vorhanden und referenzieren ein Galerie-Bild ueber `imageId`.
+ */
+export interface SiteSection {
+  key: string;
+  type: SectionType;
   enabled: boolean;
+  imageId?: number | null;
+  caption?: string;
 }
 
 export interface SiteContent {
@@ -26,6 +34,7 @@ export interface SiteContent {
   locationName: string;
   heroTitle: string;
   heroSubtitle: string;
+  heroObjectPosition: string; // CSS object-position fuer das Hero-Titelbild
   storyTitle: string;
   storyText: string;
   scheduleTitle: string;
@@ -36,11 +45,11 @@ export interface SiteContent {
   faq: FaqItem[];
   rsvpTitle: string;
   rsvpSubtitle: string;
-  sections: SectionToggle[];
+  sections: SiteSection[];
 }
 
-/** Kanonische Reihenfolge der Sektionen. */
-export const sectionOrder: SectionId[] = [
+/** Kanonische Default-Reihenfolge der Singleton-Sektionen (ohne "image"). */
+export const sectionOrder: SectionType[] = [
   "hero",
   "countdown",
   "story",
@@ -59,6 +68,7 @@ export const defaultContent: SiteContent = {
   locationName: "Schlossgarten Musterstadt",
   heroTitle: "Wir heiraten!",
   heroSubtitle: "Anna & Jonas · 12. September 2026",
+  heroObjectPosition: "center",
   storyTitle: "Unsere Geschichte",
   storyText:
     "Hier koennt ihr ein paar Worte ueber euch schreiben – wie ihr euch kennengelernt habt und warum ihr diesen Tag gemeinsam feiern moechtet.",
@@ -79,5 +89,5 @@ export const defaultContent: SiteContent = {
   ],
   rsvpTitle: "Zu- oder Absage",
   rsvpSubtitle: "Bitte gebt uns bis zum 1. August 2026 Bescheid.",
-  sections: sectionOrder.map((id) => ({ id, enabled: true })),
+  sections: sectionOrder.map((type) => ({ key: type, type, enabled: true })),
 };

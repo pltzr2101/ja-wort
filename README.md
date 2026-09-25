@@ -120,9 +120,9 @@ bezogen und per Portainer deployt. Es ist kein lokaler Build noetig.
 
 Im Admin-Bereich:
 
-- **Anmeldungen** – Liste aller RSVPs + `CSV exportieren` (importierbar in Google Sheets/Excel)
-- **Inhalte** – Theme, Texte, Ablauf, Karten-URL, FAQ, Sektionen an/aus
-- **Galerie** – Bilder hochladen (JPG/PNG/WebP, max. 15 MB) und loeschen
+- **Anmeldungen** – Liste aller RSVPs + `CSV exportieren` (importierbar in Google Sheets/Excel); einzelne Anmeldungen per rotem ✕ (mit Bestaetigung) loeschen
+- **Inhalte** – Theme, Texte, Ablauf, Karten-URL, FAQ sowie Sektionen an/aus, per Drag & Drop umsortieren und beliebig viele zusaetzliche „Bild“-Sektionen einfuegen; Bildfokus (object-position) fuer das Titelbild
+- **Galerie** – Bilder hochladen (JPG/PNG/WebP, max. 15 MB), loeschen und per Drag & Drop umsortieren (das erste Bild ist das Titelbild)
 
 ---
 

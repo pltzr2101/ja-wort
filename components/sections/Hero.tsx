@@ -18,7 +18,12 @@ export default function Hero({ content, images }: { content: SiteContent; images
   return (
     <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden">
       {background && (
-        <img src={background} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img
+          src={background}
+          alt=""
+          style={{ objectPosition: content.heroObjectPosition }}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
       )}
       <div
         className={`absolute inset-0 ${

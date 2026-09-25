@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import {
-  sectionOrder,
   type FaqItem,
   type ScheduleItem,
-  type SectionId,
   type SiteContent,
+  type SiteSection,
 } from "@/content/default";
+import type { ImageRow } from "@/lib/images";
 import { themeIds, themes } from "@/lib/themes";
 
 const fieldClass =
@@ -16,13 +16,15 @@ const labelClass = "mb-1 block text-sm font-medium text-muted";
 
 interface Props {
   initial: SiteContent;
+  images: ImageRow[];
 }
 
 /** Formular zum Bearbeiten aller Inhalte (Baukasten). */
-export default function ContentForm({ initial }: Props) {
+export default function ContentForm({ initial, images }: Props) {
   const [content, setContent] = useState<SiteContent>(initial);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   function setField<K extends keyof SiteContent>(key: K, value: SiteContent[K]) {
     setContent((prev) => ({ ...prev, [key]: value }));
@@ -42,11 +44,44 @@ export default function ContentForm({ initial }: Props) {
     }));
   }
 
-  function toggleSection(id: SectionId, enabled: boolean) {
+  function toggleSection(key: string, enabled: boolean) {
     setContent((prev) => ({
       ...prev,
-      sections: prev.sections.map((s) => (s.id === id ? { ...s, enabled } : s)),
+      sections: prev.sections.map((s) => (s.key === key ? { ...s, enabled } : s)),
     }));
+  }
+
+  function updateImageSection(key: string, patch: Partial<SiteSection>) {
+    setContent((prev) => ({
+      ...prev,
+      sections: prev.sections.map((s) => (s.key === key ? { ...s, ...patch } : s)),
+    }));
+  }
+
+  function removeSection(key: string) {
+    setContent((prev) => ({
+      ...prev,
+      sections: prev.sections.filter((s) => s.key !== key),
+    }));
+  }
+
+  function addImageSection() {
+    setContent((prev) => ({
+      ...prev,
+      sections: [
+        ...prev.sections,
+        { key: crypto.randomUUID(), type: "image", enabled: true, imageId: null, caption: "" },
+      ],
+    }));
+  }
+
+  function moveSection(from: number, to: number) {
+    setContent((prev) => {
+      const next = [...prev.sections];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return { ...prev, sections: next };
+    });
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -98,27 +133,123 @@ export default function ContentForm({ initial }: Props) {
             </select>
           </div>
           <div>
-            <label htmlFor="sections" className={labelClass}>
-              Sektionen
+            <label htmlFor="heroObjectPosition" className={labelClass}>
+              Bildfokus (Titelbild)
             </label>
-            <div className="flex flex-wrap gap-3 rounded-lg border border-border p-3">
-              {sectionOrder.map((id) => {
-                const enabled = content.sections.find((s) => s.id === id)?.enabled ?? true;
-                return (
-                  <label key={id} className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={enabled}
-                      onChange={(e) => toggleSection(id, e.target.checked)}
-                      className="h-4 w-4 accent-[var(--accent)]"
-                    />
-                    {id}
-                  </label>
-                );
-              })}
-            </div>
+            <select
+              id="heroObjectPosition"
+              value={content.heroObjectPosition}
+              onChange={(e) => setField("heroObjectPosition", e.target.value)}
+              className={fieldClass}
+            >
+              <option value="center">Mitte</option>
+              <option value="top">Oben</option>
+              <option value="bottom">Unten</option>
+              <option value="left">Links</option>
+              <option value="right">Rechts</option>
+            </select>
           </div>
         </div>
+      </section>
+
+      <section className="rounded-xl border border-border bg-surface p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="font-serif text-xl font-semibold">Sektionen</h2>
+          <button
+            type="button"
+            onClick={addImageSection}
+            className="rounded-full bg-accent px-4 py-2 text-xs font-medium uppercase tracking-widest text-white hover:opacity-90"
+          >
+            + Bild-Sektion
+          </button>
+        </div>
+        <p className="mt-2 text-sm text-muted">
+          Reihenfolge per Drag &amp; Drop oder mit den Pfeilen aendern.
+        </p>
+        <ul className="mt-4 space-y-2">
+          {content.sections.map((section, index) => (
+            <li
+              key={section.key}
+              draggable
+              onDragStart={() => setDraggedIndex(index)}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => {
+                if (draggedIndex !== null && draggedIndex !== index) {
+                  moveSection(draggedIndex, index);
+                }
+                setDraggedIndex(null);
+              }}
+              className={`flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 ${
+                draggedIndex === index ? "opacity-50" : ""
+              }`}
+            >
+              <span className="cursor-grab text-muted" aria-hidden>
+                ⠿
+              </span>
+              <div className="flex gap-1">
+                <button
+                  type="button"
+                  onClick={() => moveSection(index, index - 1)}
+                  disabled={index === 0}
+                  className="rounded border border-border px-2 text-muted hover:text-foreground disabled:opacity-30"
+                  aria-label="Nach oben"
+                >
+                  ↑
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveSection(index, index + 1)}
+                  disabled={index === content.sections.length - 1}
+                  className="rounded border border-border px-2 text-muted hover:text-foreground disabled:opacity-30"
+                  aria-label="Nach unten"
+                >
+                  ↓
+                </button>
+              </div>
+              <input
+                type="checkbox"
+                checked={section.enabled}
+                onChange={(e) => toggleSection(section.key, e.target.checked)}
+                className="h-4 w-4 accent-[var(--accent)]"
+              />
+              <span className="flex-1 text-sm font-medium">{section.type}</span>
+              {section.type === "image" && (
+                <div className="flex flex-1 items-center gap-2">
+                  <select
+                    value={section.imageId ?? ""}
+                    onChange={(e) =>
+                      updateImageSection(section.key, {
+                        imageId: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                    className={fieldClass}
+                  >
+                    <option value="">Bild waehlen…</option>
+                    {images.map((image) => (
+                      <option key={image.id} value={image.id}>
+                        {image.caption ?? image.filename}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    value={section.caption ?? ""}
+                    onChange={(e) => updateImageSection(section.key, { caption: e.target.value })}
+                    placeholder="Bildunterschrift"
+                    className={fieldClass}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSection(section.key)}
+                    className="shrink-0 rounded-lg border border-border px-3 text-muted hover:text-red-600"
+                    aria-label="Sektion entfernen"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section className="rounded-xl border border-border bg-surface p-6">

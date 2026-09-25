@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAnySession } from "@/lib/api";
+import { requireAdmin, requireAnySession } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
+import { deleteRsvp } from "@/lib/rsvps";
 import { rsvpSchema } from "@/lib/validation";
 
 /** Nimmt eine RSVP-Antwort entgegen (nur angemeldete Gaeste). */
@@ -56,6 +57,25 @@ export async function POST(req: NextRequest) {
           : 0,
       data.note ?? null
     );
+
+  return NextResponse.json({ ok: true });
+}
+
+/** Loescht eine Anmeldung anhand ihrer ID (nur Admin). */
+export async function DELETE(req: NextRequest) {
+  if (!requireAdmin(req)) {
+    return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  }
+
+  const body = (await req.json().catch(() => null)) as { id?: unknown } | null;
+  if (!body || typeof body.id !== "number") {
+    return NextResponse.json({ error: "Ungueltige Anfrage." }, { status: 400 });
+  }
+
+  const deleted = deleteRsvp(body.id);
+  if (!deleted) {
+    return NextResponse.json({ error: "Anmeldung nicht gefunden." }, { status: 404 });
+  }
 
   return NextResponse.json({ ok: true });
 }
