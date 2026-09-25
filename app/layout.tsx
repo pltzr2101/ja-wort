@@ -1,41 +1,68 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter, Lora, Noto_Sans_KR, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const displayFont = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+/**
+ * Die Schriften werden bewusst self-hosted (next/font/local statt
+ * next/font/google), damit der Produktions-Build vollstaendig offline und
+ * deterministisch ablaeuft. next/font/google laedt die Fonts erst beim Build
+ * von fonts.googleapis.com herunter; in isolierten CI-/Docker-Builds ohne
+ * Zugriff auf Google Fonts schlaegt genau das mit
+ * "Cannot read properties of null (reading '1')" fehl.
+ */
+
+const displayFont = localFont({
+  src: [
+    { path: "../fonts/cormorant-garamond/400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/cormorant-garamond/500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/cormorant-garamond/600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/cormorant-garamond/700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-display",
   display: "swap",
 });
 
-const displayAltFont = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const displayAltFont = localFont({
+  src: [
+    { path: "../fonts/playfair-display/400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/playfair-display/500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/playfair-display/600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/playfair-display/700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-display-alt",
   display: "swap",
 });
 
-const bodyFont = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const bodyFont = localFont({
+  src: [
+    { path: "../fonts/inter/400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/inter/500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/inter/600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/inter/700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-body",
   display: "swap",
 });
 
-const bodySerifFont = Lora({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
+const bodySerifFont = localFont({
+  src: [
+    { path: "../fonts/lora/400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/lora/500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/lora/600.woff2", weight: "600", style: "normal" },
+  ],
   variable: "--font-body-serif",
   display: "swap",
 });
 
-// Koreanische Schrift fuer die "ko"-Sprachvariante. Hangul-Glyphen werden ueber
-// den Unicode-Range nachgeladen; preload: false vermeidet das Vorab-Laden des
-// grossen Zeichensatzes auf deutschen Seiten.
-const koreanFont = Noto_Sans_KR({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
+// Koreanische Schrift fuer die "ko"-Sprachvariante (Latin-Subset, damit
+// lateinische Zeichen im koreanischen Layout dieselbe Anmutung behalten).
+// preload: false vermeidet das Vorab-Laden auf deutschen Seiten.
+const koreanFont = localFont({
+  src: [
+    { path: "../fonts/noto-sans-kr/400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/noto-sans-kr/500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/noto-sans-kr/700.woff2", weight: "700", style: "normal" },
+  ],
   variable: "--font-ko",
   display: "swap",
   preload: false,
@@ -53,8 +80,8 @@ export const viewport: Viewport = {
 };
 
 /**
- * Root-Layout: bindet die Google Fonts (Cormorant Garamond fuer Headlines,
- * Inter fuer Fliesstext) als self-hosted Fonts ein und setzt die Basis-Schriftart.
+ * Root-Layout: bindet die self-hosted Fonts (Cormorant Garamond fuer Headlines,
+ * Inter fuer Fliesstext) ein und setzt die Basis-Schriftart.
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -149,10 +149,18 @@ app/                  Next.js App Router (Seiten + API-Routen)
   api/                Route Handler (auth, rsvp, content, uploads)
 components/           Sektionen + Formulare
 content/default.ts    Standard-Inhalte + Sektionen (Baukasten-Quelle)
+fonts/                Self-hosted Schriftdateien (woff2, per next/font/local eingebunden)
 lib/                  Datenbank, Auth, Session, Upload, Validierung, Themes
 tests/                Vitest + Playwright Tests
 data/                 Laufzeitdaten (SQLite + Uploads, nicht in Git)
 ```
+
+Die Schriften sind bewusst **self-hosted** (`app/layout.tsx` nutzt `next/font/local`
+und liest die woff2-Dateien aus `fonts/`). So laeuft der Produktions-Build komplett
+offline und deterministisch – `next/font/google` wuerde die Fonts erst beim Build
+von fonts.googleapis.com laden und in isolierten CI-/Docker-Builds fehlschlagen.
+Neue Schrift-Schnitte werden als woff2 unter `fonts/` abgelegt und in
+`app/layout.tsx` referenziert.
 
 ---
 

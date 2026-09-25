@@ -13,3 +13,5 @@ coverage
 test-results
 playwright-report
 *.log
+.agents_tmp
+.agent_tmp
