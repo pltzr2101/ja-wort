@@ -111,7 +111,10 @@ export function normalizeSections(
 
   for (const type of sectionOrder) {
     if (!seenSingleton.has(type)) {
-      result.push({ key: type, type, enabled: true });
+      // Kontakt bleibt wie bei defaultSections() deaktiviert, bis Kontaktdaten
+      // hinterlegt sind – auch wenn eine gespeicherte Sektionsliste ihn (noch)
+      // nicht enthaelt (z. B. Daten von vor diesem Feature).
+      result.push({ key: type, type, enabled: type !== "contact" });
     }
   }
 

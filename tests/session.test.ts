@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
-import { describe, expect, it } from "vitest";
-import { createSession, verifySession } from "@/lib/session";
+import { afterEach, describe, expect, it } from "vitest";
+import { createSession, sessionMaxAge, verifySession } from "@/lib/session";
 
 describe("session", () => {
   it("erstellt und verifiziert ein gueltiges Token", () => {
@@ -36,5 +36,36 @@ describe("session", () => {
       .update(payload)
       .digest("hex");
     expect(verifySession(`${payload}.${sig}`)).toBeNull();
+  });
+});
+
+describe("Passwort-Bindung", () => {
+  afterEach(() => {
+    delete process.env.GUEST_PASSWORD;
+    delete process.env.ADMIN_PASSWORD;
+  });
+
+  it("macht Gast-Sessions bei Passwortaenderung ungueltig", () => {
+    process.env.GUEST_PASSWORD = "altes-passwort";
+    const token = createSession("guest");
+    expect(verifySession(token)?.kind).toBe("guest");
+
+    process.env.GUEST_PASSWORD = "neues-passwort";
+    expect(verifySession(token)).toBeNull();
+  });
+
+  it("macht Admin-Sessions bei Passwortaenderung ungueltig", () => {
+    process.env.ADMIN_PASSWORD = "altes-admin-passwort";
+    const token = createSession("admin");
+    expect(verifySession(token)?.kind).toBe("admin");
+
+    process.env.ADMIN_PASSWORD = "neues-admin-passwort";
+    expect(verifySession(token)).toBeNull();
+  });
+});
+
+describe("Session-Gueltigkeit", () => {
+  it("Admin-Sessions sind kuerzer gueltig als Gast-Sessions", () => {
+    expect(sessionMaxAge("admin")).toBeLessThan(sessionMaxAge("guest"));
   });
 });

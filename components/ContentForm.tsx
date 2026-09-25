@@ -322,7 +322,9 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
                       ? "Bild"
                       : section.type === "text"
                         ? "Text"
-                        : section.type}
+                        : section.type === "contact"
+                          ? "Kontakt"
+                          : section.type}
                   </span>
                   {(section.type === "image" || section.type === "text") && (
                     <button
@@ -650,6 +652,62 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
               value={content.rsvpSubtitle}
               onChange={(e) => setField("rsvpSubtitle", e.target.value)}
               className={fieldClass}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-xl border border-border bg-surface p-6">
+        <h2 className="font-serif text-xl font-semibold">Kontakt</h2>
+        <p className="mt-2 text-sm text-muted">
+          Wird pro Sprache gepflegt (z. B. Deutsch = deine Daten, Koreanisch = Daten deiner
+          Verlobten). Die Sektion lässt sich oben unter „Sektionen“ an- und abschalten.
+        </p>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div>
+            <label htmlFor="contactTitle" className={labelClass}>
+              Titel
+            </label>
+            <input
+              id="contactTitle"
+              value={content.contactTitle}
+              onChange={(e) => setField("contactTitle", e.target.value)}
+              className={fieldClass}
+            />
+          </div>
+          <div>
+            <label htmlFor="contactName" className={labelClass}>
+              Name
+            </label>
+            <input
+              id="contactName"
+              value={content.contactName}
+              onChange={(e) => setField("contactName", e.target.value)}
+              className={fieldClass}
+            />
+          </div>
+          <div>
+            <label htmlFor="contactPhone" className={labelClass}>
+              Telefonnummer / WhatsApp
+            </label>
+            <input
+              id="contactPhone"
+              value={content.contactPhone}
+              onChange={(e) => setField("contactPhone", e.target.value)}
+              className={fieldClass}
+              placeholder="+49 ..."
+            />
+          </div>
+          <div>
+            <label htmlFor="contactEmail" className={labelClass}>
+              E-Mail-Adresse
+            </label>
+            <input
+              id="contactEmail"
+              value={content.contactEmail}
+              onChange={(e) => setField("contactEmail", e.target.value)}
+              className={fieldClass}
+              placeholder="mail@example.com"
             />
           </div>
         </div>

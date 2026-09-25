@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdminPassword } from "@/lib/auth";
-import { createSession } from "@/lib/session";
+import { createSession, sessionMaxAge } from "@/lib/session";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
 import { isSecureRequest } from "@/lib/api";
-
-const COOKIE_TTL = 60 * 60 * 24 * 30; // 30 Tage
 
 /** Admin-Anmeldung (eigenes Passwort, mit Rate-Limit). */
 export async function POST(req: NextRequest) {
@@ -27,7 +25,7 @@ export async function POST(req: NextRequest) {
     sameSite: "lax",
     secure: isSecureRequest(req),
     path: "/",
-    maxAge: COOKIE_TTL,
+    maxAge: sessionMaxAge("admin"),
   });
   return res;
 }

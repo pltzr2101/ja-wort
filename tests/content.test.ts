@@ -188,3 +188,37 @@ describe("sprachabhaengige Inhalte", () => {
     expect(text?.text).toBe("DE neu");
   });
 });
+
+describe("Kontakt-Sektion", () => {
+  it("ist standardmaessig deaktiviert", () => {
+    const section = defaultContent.sections.find((s) => s.type === "contact");
+    expect(section).toBeDefined();
+    expect(section?.enabled).toBe(false);
+  });
+
+  it("ergaenzt eine fehlende Kontakt-Sektion deaktiviert", () => {
+    const sections = normalizeSections([{ key: "map", type: "map", enabled: true }]);
+    const contact = sections.find((s) => s.type === "contact");
+    expect(contact).toBeDefined();
+    expect(contact?.enabled).toBe(false);
+  });
+
+  it("liefert sprachabhaengige Defaults (DE/KO)", () => {
+    expect(defaultContent.contactTitle).toBe("Kontakt");
+    expect(defaultContent.contactName).toBe("Julian");
+    expect(defaultContentKo.contactTitle).toBe("연락처");
+  });
+
+  it("pflegt Kontaktdaten pro Sprache getrennt", () => {
+    const de = { ...defaultContent, contactName: "Julian", contactEmail: "julian@example.com" };
+    saveContent(de, "de");
+
+    const ko = { ...defaultContentKo, contactName: "지민", contactEmail: "jimin@example.com" };
+    saveContent(ko, "ko");
+
+    expect(getContent("de").contactName).toBe("Julian");
+    expect(getContent("de").contactEmail).toBe("julian@example.com");
+    expect(getContent("ko").contactName).toBe("지민");
+    expect(getContent("ko").contactEmail).toBe("jimin@example.com");
+  });
+});

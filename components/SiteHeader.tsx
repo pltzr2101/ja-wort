@@ -8,7 +8,7 @@ interface Props {
 }
 
 /** Anker-Navigation fuer die Singleton-Sektionen (ohne Hero/Bild/Text). */
-const NAV_TYPES: SectionType[] = ["gallery", "schedule", "rsvp", "map", "faq"];
+const NAV_TYPES: SectionType[] = ["gallery", "schedule", "rsvp", "map", "faq", "contact"];
 
 /** Sticky-Kopfbereich mit Paarnamen, Sprach-Umschalter und Anker-Navigation. */
 export default function SiteHeader({ content, locale }: Props) {

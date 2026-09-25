@@ -6,7 +6,16 @@ export type Locale = "de" | "ko";
 export const LOCALES: Locale[] = ["de", "ko"];
 
 export type SectionType =
-  "hero" | "countdown" | "gallery" | "schedule" | "rsvp" | "map" | "faq" | "image" | "text";
+  | "hero"
+  | "countdown"
+  | "gallery"
+  | "schedule"
+  | "rsvp"
+  | "map"
+  | "faq"
+  | "contact"
+  | "image"
+  | "text";
 
 export interface ScheduleItem {
   time: string;
@@ -57,6 +66,11 @@ export interface SiteContent {
   faq: FaqItem[];
   rsvpTitle: string;
   rsvpSubtitle: string;
+  /** Kontakt-Sektion: Titel, Name, Telefon/WhatsApp und E-Mail (pro Sprache). */
+  contactTitle: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
   sections: SiteSection[];
 }
 
@@ -69,6 +83,7 @@ export const sectionOrder: SectionType[] = [
   "rsvp",
   "map",
   "faq",
+  "contact",
 ];
 
 /** Deutscher Standard-Titel/Text der Beispiel-Text-Sektion ("Story"). */
@@ -89,7 +104,9 @@ export function defaultSections(
   const singletons: SiteSection[] = sectionOrder.map((type) => ({
     key: type,
     type,
-    enabled: true,
+    // Die Kontakt-Sektion ist standardmaessig deaktiviert, bis Kontaktdaten
+    // hinterlegt wurden (verhindert eine leere Sektion auf der Live-Seite).
+    enabled: type !== "contact",
   }));
 
   return [
@@ -132,6 +149,10 @@ export const defaultContent: SiteContent = {
   ],
   rsvpTitle: "Zu- oder Absage",
   rsvpSubtitle: "Bitte gebt uns bis zum 1. August 2026 Bescheid.",
+  contactTitle: "Kontakt",
+  contactName: "Julian",
+  contactPhone: "",
+  contactEmail: "",
   sections: defaultSections(),
 };
 
@@ -161,6 +182,10 @@ export const defaultContentKo: SiteContent = {
   ],
   rsvpTitle: "참석 여부",
   rsvpSubtitle: "2026년 8월 1일까지 알려주세요.",
+  contactTitle: "연락처",
+  contactName: "",
+  contactPhone: "",
+  contactEmail: "",
   sections: defaultSections(
     "우리의 이야기",
     "두 분이 어떻게 만나게 되었는지, 그리고 이 날을 함께 축하하고 싶은 이유에 대해 몇 마디 적어 주세요."

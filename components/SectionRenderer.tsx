@@ -8,6 +8,7 @@ import Schedule from "./sections/Schedule";
 import RsvpSection from "./sections/RsvpSection";
 import Map from "./sections/Map";
 import Faq from "./sections/Faq";
+import Contact from "./sections/Contact";
 import ImageSection from "./sections/ImageSection";
 import TextSection from "./sections/TextSection";
 
@@ -44,6 +45,8 @@ export default function SectionRenderer({ content, images, locale }: Props) {
               return <Map key={section.key} content={content} locale={locale} />;
             case "faq":
               return <Faq key={section.key} content={content} />;
+            case "contact":
+              return <Contact key={section.key} content={content} locale={locale} />;
             case "image":
               return <ImageSection key={section.key} section={section} images={images} />;
             case "text":
