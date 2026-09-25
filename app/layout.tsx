@@ -54,8 +54,9 @@ const bodySerifFont = localFont({
   display: "swap",
 });
 
-// Koreanische Schrift fuer die "ko"-Sprachvariante (Latin-Subset, damit
-// lateinische Zeichen im koreanischen Layout dieselbe Anmutung behalten).
+// Koreanische Schrift fuer die "ko"-Sprachvariante. Enthaelt neben dem
+// Latin-Block den vollstaendigen Hangul-Zeichensatz (Silben + Jamo), damit
+// koreanischer Text nicht auf eine System-Schrift zurueckfaellt.
 // preload: false vermeidet das Vorab-Laden auf deutschen Seiten.
 const koreanFont = localFont({
   src: [
