@@ -214,13 +214,21 @@ describe("Kontakt-Sektion", () => {
     const de = { ...defaultContent, contactName: "Julian", contactEmail: "julian@example.com" };
     saveContent(de, "de");
 
-    const ko = { ...defaultContentKo, contactName: "지민", contactEmail: "jimin@example.com" };
+    const ko = {
+      ...defaultContentKo,
+      contactName: "지민",
+      contactPhone: "+82 10 1234 5678",
+      contactKakao: "kakao-id",
+      contactEmail: "DE00 1234 5678 9000 00",
+    };
     saveContent(ko, "ko");
 
     expect(getContent("de").contactName).toBe("Julian");
     expect(getContent("de").contactEmail).toBe("julian@example.com");
     expect(getContent("ko").contactName).toBe("지민");
-    expect(getContent("ko").contactEmail).toBe("jimin@example.com");
+    expect(getContent("ko").contactPhone).toBe("+82 10 1234 5678");
+    expect(getContent("ko").contactKakao).toBe("kakao-id");
+    expect(getContent("ko").contactEmail).toBe("DE00 1234 5678 9000 00");
   });
 });
 

@@ -66,10 +66,14 @@ export interface SiteContent {
   faq: FaqItem[];
   rsvpTitle: string;
   rsvpSubtitle: string;
-  /** Kontakt-Sektion: Titel, Name, Telefon/WhatsApp und E-Mail (pro Sprache). */
+  /**
+   * Kontakt-Sektion (pro Sprache). Deutsch: Telefon/WhatsApp und E-Mail;
+   * Koreanisch: Telefon, KakaoTalk und Kontonummer/IBAN.
+   */
   contactTitle: string;
   contactName: string;
   contactPhone: string;
+  contactKakao: string;
   contactEmail: string;
   sections: SiteSection[];
 }
@@ -152,6 +156,7 @@ export const defaultContent: SiteContent = {
   contactTitle: "Kontakt",
   contactName: "Julian",
   contactPhone: "",
+  contactKakao: "",
   contactEmail: "",
   sections: defaultSections(),
 };
@@ -185,6 +190,7 @@ export const defaultContentKo: SiteContent = {
   contactTitle: "연락처",
   contactName: "",
   contactPhone: "",
+  contactKakao: "",
   contactEmail: "",
   sections: defaultSections(
     "우리의 이야기",

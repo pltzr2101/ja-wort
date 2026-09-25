@@ -711,26 +711,40 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
           </div>
           <div>
             <label htmlFor="contactPhone" className={labelClass}>
-              Telefonnummer / WhatsApp
+              {locale === "ko" ? "Telefonnummer" : "Telefonnummer / WhatsApp"}
             </label>
             <input
               id="contactPhone"
               value={content.contactPhone}
               onChange={(e) => setField("contactPhone", e.target.value)}
               className={fieldClass}
-              placeholder="+49 ..."
+              placeholder={locale === "ko" ? "+82 ..." : "+49 ..."}
             />
           </div>
+          {locale === "ko" && (
+            <div>
+              <label htmlFor="contactKakao" className={labelClass}>
+                KakaoTalk
+              </label>
+              <input
+                id="contactKakao"
+                value={content.contactKakao}
+                onChange={(e) => setField("contactKakao", e.target.value)}
+                className={fieldClass}
+                placeholder="KakaoTalk-ID"
+              />
+            </div>
+          )}
           <div>
             <label htmlFor="contactEmail" className={labelClass}>
-              E-Mail-Adresse
+              {locale === "ko" ? "IBAN" : "E-Mail-Adresse"}
             </label>
             <input
               id="contactEmail"
               value={content.contactEmail}
               onChange={(e) => setField("contactEmail", e.target.value)}
               className={fieldClass}
-              placeholder="mail@example.com"
+              placeholder={locale === "ko" ? "IBAN" : "mail@example.com"}
             />
           </div>
         </div>

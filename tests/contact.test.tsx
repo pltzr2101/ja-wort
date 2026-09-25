@@ -47,16 +47,39 @@ describe("Contact", () => {
     expect(links.some((a) => a.getAttribute("href") === "mailto:julian@example.com")).toBe(true);
   });
 
-  it("verwendet koreanische Labels", () => {
+  it("verwendet koreanische Labels (Telefon, KakaoTalk, Kontonummer)", () => {
     render(
       <Contact
-        content={content({ contactName: "지민", contactPhone: "+82 10 1234 5678" })}
+        content={content({
+          contactName: "지민",
+          contactPhone: "+82 10 1234 5678",
+          contactKakao: "kakao-id",
+          contactEmail: "DE00 1234 5678 9000 00",
+        })}
         locale="ko"
       />
     );
     expect(screen.getByText("전화")).toBeInTheDocument();
     expect(screen.getByText("카카오톡")).toBeInTheDocument();
     expect(screen.getByText("계좌번호")).toBeInTheDocument();
+  });
+
+  it("zeigt im Koreanischen KakaoTalk aus eigenem Feld (nicht aus Telefon)", () => {
+    render(
+      <Contact
+        content={content({
+          contactName: "지민",
+          contactPhone: "+82 10 1234 5678",
+          contactKakao: "kakao-id",
+          contactEmail: "",
+        })}
+        locale="ko"
+      />
+    );
+    // Telefonnummer erscheint nur einmal (kein abgeleitetes WhatsApp).
+    expect(screen.getAllByText("+82 10 1234 5678")).toHaveLength(1);
+    expect(screen.getByText("kakao-id")).toBeInTheDocument();
+    expect(screen.queryByText("계좌번호")).not.toBeInTheDocument();
   });
 
   it("rendert im Koreanischen keine Links", () => {

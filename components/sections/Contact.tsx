@@ -2,42 +2,44 @@ import type { SiteContent } from "@/content/default";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
 /**
- * Kontakt-Sektion mit Name, Telefon/WhatsApp und E-Mail. Die Inhalte kommen
- * pro Sprache aus dem Content-Modell; ohne hinterlegte Daten rendert die
- * Sektion nichts (sie bleibt zusaetzlich in der Sektions-Verwaltung schaltbar).
- * Im Koreanischen werden die Kontaktdaten (KakaoTalk, Kontonummer) ohne Links
- * dargestellt, da diese dort nicht als Telefon-/E-Mail-Link genutzt werden.
+ * Kontakt-Sektion mit Name und Kontaktkanaelen. Die Inhalte kommen pro Sprache
+ * aus dem Content-Modell; ohne hinterlegte Daten rendert die Sektion nichts
+ * (sie bleibt zusaetzlich in der Sektions-Verwaltung schaltbar).
+ *
+ * Deutsch: Telefon (tel:), WhatsApp (wa.me) und E-Mail (mailto:).
+ * Koreanisch: Telefon, KakaoTalk und Kontonummer/IBAN als reiner Text
+ * (keine Links, da diese Kanaele dort nicht als Link genutzt werden).
  */
 export default function Contact({ content, locale }: { content: SiteContent; locale: Locale }) {
   const dict = getDictionary(locale);
   const name = content.contactName.trim();
   const phone = content.contactPhone.trim();
+  const kakao = content.contactKakao.trim();
   const email = content.contactEmail.trim();
 
-  if (!name && !phone && !email) return null;
+  if (!name && !phone && !kakao && !email) return null;
 
   const isKo = locale === "ko";
 
   const items: { href?: string; label: string; value: string; external?: boolean }[] = [];
-  if (phone) {
-    items.push({
-      href: isKo ? undefined : `tel:${phone}`,
-      label: dict.contact.phone,
-      value: phone,
-    });
-    items.push({
-      href: isKo ? undefined : `https://wa.me/${phone.replace(/[^0-9]/g, "")}`,
-      label: dict.contact.whatsapp,
-      value: phone,
-      external: true,
-    });
-  }
-  if (email) {
-    items.push({
-      href: isKo ? undefined : `mailto:${email}`,
-      label: dict.contact.email,
-      value: email,
-    });
+
+  if (isKo) {
+    if (phone) items.push({ label: dict.contact.phone, value: phone });
+    if (kakao) items.push({ label: dict.contact.whatsapp, value: kakao });
+    if (email) items.push({ label: dict.contact.email, value: email });
+  } else {
+    if (phone) {
+      items.push({ href: `tel:${phone}`, label: dict.contact.phone, value: phone });
+      items.push({
+        href: `https://wa.me/${phone.replace(/[^0-9]/g, "")}`,
+        label: dict.contact.whatsapp,
+        value: phone,
+        external: true,
+      });
+    }
+    if (email) {
+      items.push({ href: `mailto:${email}`, label: dict.contact.email, value: email });
+    }
   }
 
   const cardClass =
