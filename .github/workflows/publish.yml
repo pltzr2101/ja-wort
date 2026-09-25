@@ -25,7 +25,7 @@ jobs:
       # Der Image-Name wird aus `github.repository` abgeleitet und von
       # docker/metadata-action automatisch kleingeschrieben (GHCR erlaubt keine
       # Grossbuchstaben).
-      - uses: docker/metadata-action@v5
+      - uses: docker/metadata-action@v6
         id: meta
         with:
           images: ghcr.io/${{ github.repository }}
