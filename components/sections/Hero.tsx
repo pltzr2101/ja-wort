@@ -27,7 +27,7 @@ export default function Hero({
   const dict = getDictionary(locale);
 
   return (
-    <section className="relative flex min-h-[90vh] items-center justify-center overflow-hidden md:min-h-[85vh]">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
       {background && (
         <img
           src={background}

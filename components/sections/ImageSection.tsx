@@ -27,7 +27,7 @@ export default function ImageSection({ section, images }: Props) {
         loading="lazy"
         decoding="async"
         style={{ objectPosition: position }}
-        className={`h-[50vh] w-full md:h-[70vh] ${
+        className={`h-[50vh] w-full md:h-[90vh] ${
           fit === "contain" ? "object-contain" : "object-cover"
         }`}
       />
