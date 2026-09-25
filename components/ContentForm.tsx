@@ -68,7 +68,6 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
   const [content, setContent] = useState<SiteContent>(initialDe);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   // Sprache oder Server-Daten synchron halten. `initialDe`/`initialKo` aendern
   // sich nach einem Speichern (router.refresh) oder nach einer Navigation;
@@ -278,30 +277,14 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
               </button>
             </div>
           </div>
-          <p className="mt-2 text-sm text-muted">
-            Reihenfolge per Drag &amp; Drop oder mit den Pfeilen aendern.
-          </p>
+          <p className="mt-2 text-sm text-muted">Reihenfolge mit den Pfeilen aendern.</p>
           <ul className="mt-4 space-y-2">
             {content.sections.map((section, index) => (
               <li
                 key={section.key}
-                draggable
-                onDragStart={() => setDraggedIndex(index)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => {
-                  if (draggedIndex !== null && draggedIndex !== index) {
-                    moveSection(draggedIndex, index);
-                  }
-                  setDraggedIndex(null);
-                }}
-                className={`rounded-lg border border-border bg-background px-3 py-2 ${
-                  draggedIndex === index ? "opacity-50" : ""
-                }`}
+                className="rounded-lg border border-border bg-background px-3 py-2"
               >
                 <div className="flex items-center gap-2">
-                  <span className="cursor-grab text-muted" aria-hidden>
-                    ⠿
-                  </span>
                   <div className="flex gap-1">
                     <button
                       type="button"
