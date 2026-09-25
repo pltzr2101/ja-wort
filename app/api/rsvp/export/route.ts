@@ -6,6 +6,7 @@ interface RsvpRow {
   name: string;
   attending: number;
   guests: number | null;
+  additional_names: string | null;
   has_children: number | null;
   children_ages: string | null;
   needs_accommodation: number | null;
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   const rows = getDb()
     .prepare(
-      `SELECT name, attending, guests, has_children, children_ages,
+      `SELECT name, attending, guests, additional_names, has_children, children_ages,
               needs_accommodation, note, created_at
        FROM rsvps ORDER BY id DESC`
     )
@@ -31,6 +32,7 @@ export async function GET(req: NextRequest) {
     "Name",
     "Zusage",
     "Personenzahl",
+    "Weitere Personen",
     "Kinder",
     "Alter der Kinder",
     "Unterkunft-Hilfe",
@@ -44,6 +46,7 @@ export async function GET(req: NextRequest) {
       row.name,
       row.attending === 1 ? "Zusage" : "Absage",
       row.guests?.toString() ?? "",
+      row.additional_names ?? "",
       row.has_children === null ? "" : row.has_children === 1 ? "Ja" : "Nein",
       row.children_ages ?? "",
       row.needs_accommodation === null ? "" : row.needs_accommodation === 1 ? "Ja" : "Nein",

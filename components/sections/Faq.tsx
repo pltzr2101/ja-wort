@@ -18,7 +18,7 @@ export default function Faq({ content }: { content: SiteContent }) {
               {item.question}
               <span className="ml-4 text-accent transition group-open:rotate-45">+</span>
             </summary>
-            <p className="mt-4 text-muted">{item.answer}</p>
+            <p className="mt-4 whitespace-pre-line text-muted">{item.answer}</p>
           </details>
         ))}
       </div>

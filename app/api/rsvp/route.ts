@@ -41,13 +41,14 @@ export async function POST(req: NextRequest) {
   getDb()
     .prepare(
       `INSERT INTO rsvps
-        (name, attending, guests, has_children, children_ages, needs_accommodation, note)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`
+        (name, attending, guests, additional_names, has_children, children_ages, needs_accommodation, note)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       data.name,
       data.attending === "yes" ? 1 : 0,
       data.guests ?? null,
+      data.additionalNames ?? null,
       data.hasChildren === null || data.hasChildren === undefined ? null : data.hasChildren ? 1 : 0,
       data.childrenAges ?? null,
       data.needsAccommodation === null || data.needsAccommodation === undefined

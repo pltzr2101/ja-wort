@@ -48,8 +48,20 @@ function migrate(database: Database.Database): void {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
+  migrateRsvpColumns(database);
   migrateContentRows(database);
   migrateKoreanContent(database);
+}
+
+/**
+ * Ergaenzt nachtraeglich neue Spalten an der RSVP-Tabelle. SQLite unterstuetzt
+ * kein "ADD COLUMN IF NOT EXISTS", daher wird die Spaltenliste geprueft.
+ */
+function migrateRsvpColumns(database: Database.Database): void {
+  const columns = database.prepare("PRAGMA table_info(rsvps)").all() as { name: string }[];
+  if (!columns.some((column) => column.name === "additional_names")) {
+    database.exec("ALTER TABLE rsvps ADD COLUMN additional_names TEXT");
+  }
 }
 
 /**

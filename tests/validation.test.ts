@@ -16,10 +16,23 @@ describe("rsvpSchema", () => {
       name: "Max Mustermann",
       attending: "yes",
       guests: 2,
+      additionalNames: "Anna Musterfrau",
       hasChildren: true,
       childrenAges: "2 und 5",
       needsAccommodation: true,
       note: "Vegetarisch",
+      website: "",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("akzeptiert additionalNames als optional", () => {
+    const result = rsvpSchema.safeParse({
+      name: "Max Mustermann",
+      attending: "yes",
+      guests: 2,
+      hasChildren: false,
+      needsAccommodation: false,
       website: "",
     });
     expect(result.success).toBe(true);

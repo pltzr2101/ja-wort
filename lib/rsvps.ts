@@ -5,6 +5,7 @@ export interface RsvpRow {
   name: string;
   attending: boolean;
   guests: number | null;
+  additionalNames: string | null;
   hasChildren: boolean | null;
   childrenAges: string | null;
   needsAccommodation: boolean | null;
@@ -17,6 +18,7 @@ interface RawRow {
   name: string;
   attending: number;
   guests: number | null;
+  additional_names: string | null;
   has_children: number | null;
   children_ages: string | null;
   needs_accommodation: number | null;
@@ -33,7 +35,7 @@ function toBool(value: number | null): boolean | null {
 export function getRsvps(): RsvpRow[] {
   const rows = getDb()
     .prepare(
-      `SELECT id, name, attending, guests, has_children, children_ages,
+      `SELECT id, name, attending, guests, additional_names, has_children, children_ages,
               needs_accommodation, note, created_at
        FROM rsvps ORDER BY id DESC`
     )
@@ -44,6 +46,7 @@ export function getRsvps(): RsvpRow[] {
     name: row.name,
     attending: toBool(row.attending) ?? false,
     guests: row.guests,
+    additionalNames: row.additional_names,
     hasChildren: toBool(row.has_children),
     childrenAges: row.children_ages,
     needsAccommodation: toBool(row.needs_accommodation),

@@ -88,6 +88,16 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
     }));
   }
 
+  function moveFaq(index: number, direction: -1 | 1) {
+    setContent((prev) => {
+      const target = index + direction;
+      if (target < 0 || target >= prev.faq.length) return prev;
+      const next = [...prev.faq];
+      [next[index], next[target]] = [next[target], next[index]];
+      return { ...prev, faq: next };
+    });
+  }
+
   function toggleSection(key: string, enabled: boolean) {
     setContent((prev) => ({
       ...prev,
@@ -596,33 +606,59 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
         <div className="mt-4 space-y-4">
           {content.faq.map((item, index) => (
             <div key={index} className="rounded-lg border border-border p-4">
-              <input
-                value={item.question}
-                onChange={(e) => updateFaq(index, { question: e.target.value })}
-                className={fieldClass}
-                placeholder="Frage"
-              />
-              <div className="mt-2 flex gap-2">
-                <textarea
-                  value={item.answer}
-                  onChange={(e) => updateFaq(index, { answer: e.target.value })}
-                  className={fieldClass}
-                  rows={2}
-                  placeholder="Antwort"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setField(
-                      "faq",
-                      content.faq.filter((_, i) => i !== index)
-                    )
-                  }
-                  className="shrink-0 rounded-lg border border-border px-3 text-muted hover:text-red-600"
-                  aria-label="Frage entfernen"
-                >
-                  ✕
-                </button>
+              <div className="flex items-start gap-2">
+                <div className="flex flex-col gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveFaq(index, -1)}
+                    disabled={index === 0}
+                    className="rounded-lg border border-border px-2 py-1 text-muted transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+                    aria-label="Frage nach oben verschieben"
+                    title="Nach oben"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveFaq(index, 1)}
+                    disabled={index === content.faq.length - 1}
+                    className="rounded-lg border border-border px-2 py-1 text-muted transition hover:text-foreground disabled:cursor-not-allowed disabled:opacity-30"
+                    aria-label="Frage nach unten verschieben"
+                    title="Nach unten"
+                  >
+                    ▼
+                  </button>
+                </div>
+                <div className="flex-1">
+                  <input
+                    value={item.question}
+                    onChange={(e) => updateFaq(index, { question: e.target.value })}
+                    className={fieldClass}
+                    placeholder="Frage"
+                  />
+                  <div className="mt-2 flex gap-2">
+                    <textarea
+                      value={item.answer}
+                      onChange={(e) => updateFaq(index, { answer: e.target.value })}
+                      className={fieldClass}
+                      rows={2}
+                      placeholder="Antwort"
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setField(
+                          "faq",
+                          content.faq.filter((_, i) => i !== index)
+                        )
+                      }
+                      className="shrink-0 rounded-lg border border-border px-3 text-muted hover:text-red-600"
+                      aria-label="Frage entfernen"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           ))}

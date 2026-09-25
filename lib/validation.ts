@@ -11,6 +11,7 @@ export const rsvpSchema = z
     name: z.string().trim().min(2, "Bitte gib deinen Namen an.").max(120),
     attending: z.enum(["yes", "no"]),
     guests: z.number().int().min(1).max(10).nullable().optional(),
+    additionalNames: z.string().trim().max(500).nullable().optional(),
     hasChildren: z.boolean().nullable().optional(),
     childrenAges: z.string().trim().max(200).nullable().optional(),
     needsAccommodation: z.boolean().nullable().optional(),

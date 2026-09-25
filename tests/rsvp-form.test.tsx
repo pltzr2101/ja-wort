@@ -79,6 +79,38 @@ describe("RsvpForm", () => {
     });
   });
 
+  it("zeigt bei mehr als einer Person ein Feld fuer weitere Namen", async () => {
+    const user = userEvent.setup();
+    render(<RsvpForm locale="de" />);
+
+    await user.selectOptions(screen.getByLabelText(/Zu- oder Absage/), "yes");
+    // Bei einer Person kein Zusatzfeld.
+    await user.selectOptions(screen.getByLabelText(/Personenzahl/), "1");
+    expect(screen.queryByLabelText(/weiteren Personen/)).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText(/Personenzahl/), "3");
+    expect(screen.getByLabelText(/weiteren Personen/)).toBeInTheDocument();
+  });
+
+  it("sendet die Namen weiterer Personen mit", async () => {
+    const user = userEvent.setup();
+    render(<RsvpForm locale="de" />);
+
+    await user.type(screen.getByLabelText(/Vor- und Nachname/), "Max Mustermann");
+    await user.selectOptions(screen.getByLabelText(/Zu- oder Absage/), "yes");
+    await user.selectOptions(screen.getByLabelText(/Personenzahl/), "3");
+    await user.type(screen.getByLabelText(/weiteren Personen/), "Anna Musterfrau, Ben Beispiel");
+
+    const childrenGroup = screen.getByRole("group", { name: /Sind Kinder/ });
+    await user.click(within(childrenGroup).getByRole("radio", { name: "Nein" }));
+
+    await user.click(screen.getByRole("button", { name: /Absenden/ }));
+
+    const [, init] = fetchMock.mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body.additionalNames).toBe("Anna Musterfrau, Ben Beispiel");
+  });
+
   it("sendet bei Absage keine bedingten Felder", async () => {
     const user = userEvent.setup();
     render(<RsvpForm locale="de" />);

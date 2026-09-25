@@ -7,6 +7,7 @@ interface FormState {
   name: string;
   attending: "" | "yes" | "no";
   guests: string;
+  additionalNames: string;
   hasChildren: "" | "yes" | "no";
   childrenAges: string;
   needsAccommodation: "" | "yes" | "no";
@@ -18,6 +19,7 @@ const initialState: FormState = {
   name: "",
   attending: "",
   guests: "",
+  additionalNames: "",
   hasChildren: "",
   childrenAges: "",
   needsAccommodation: "",
@@ -44,6 +46,8 @@ export default function RsvpForm({ locale }: { locale: Locale }) {
   }
 
   const attendingYes = form.attending === "yes";
+  const guestsCount = Number(form.guests);
+  const showAdditionalNames = attendingYes && Number.isFinite(guestsCount) && guestsCount > 1;
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,6 +58,8 @@ export default function RsvpForm({ locale }: { locale: Locale }) {
       name: form.name,
       attending: form.attending,
       guests: attendingYes ? Number(form.guests) : null,
+      additionalNames:
+        attendingYes && showAdditionalNames ? form.additionalNames.trim() || null : null,
       hasChildren: attendingYes && form.hasChildren !== "" ? form.hasChildren === "yes" : null,
       childrenAges: attendingYes && form.hasChildren === "yes" ? form.childrenAges : null,
       needsAccommodation:
@@ -164,6 +170,22 @@ export default function RsvpForm({ locale }: { locale: Locale }) {
               ))}
             </select>
           </div>
+
+          {showAdditionalNames && (
+            <div>
+              <label htmlFor="additionalNames" className={labelClass}>
+                {dict.additionalNames}
+              </label>
+              <input
+                id="additionalNames"
+                type="text"
+                value={form.additionalNames}
+                onChange={(e) => set("additionalNames", e.target.value)}
+                className={fieldClass}
+                placeholder={dict.additionalNamesPlaceholder}
+              />
+            </div>
+          )}
 
           <fieldset>
             <legend className={labelClass}>

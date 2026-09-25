@@ -55,6 +55,7 @@ export default function RsvpTable({ initial }: Props) {
                 <th className="px-4 py-3 font-medium">Name</th>
                 <th className="px-4 py-3 font-medium">Antwort</th>
                 <th className="px-4 py-3 font-medium">Personen</th>
+                <th className="px-4 py-3 font-medium">Weitere Personen</th>
                 <th className="px-4 py-3 font-medium">Kinder</th>
                 <th className="px-4 py-3 font-medium">Unterkunft</th>
                 <th className="px-4 py-3 font-medium">Notiz</th>
@@ -78,6 +79,9 @@ export default function RsvpTable({ initial }: Props) {
                     </span>
                   </td>
                   <td className="px-4 py-3">{rsvp.guests ?? "–"}</td>
+                  <td className="max-w-xs px-4 py-3 whitespace-pre-line">
+                    {rsvp.additionalNames ?? "–"}
+                  </td>
                   <td className="px-4 py-3">
                     {rsvp.hasChildren === null
                       ? "–"
