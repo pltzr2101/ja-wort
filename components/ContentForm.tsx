@@ -14,6 +14,23 @@ const fieldClass =
   "w-full rounded-lg border border-border bg-background px-4 py-3 text-foreground outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30";
 const labelClass = "mb-1 block text-sm font-medium text-muted";
 
+// Eindeutige Sektions-Keys ohne `crypto.randomUUID()`. `crypto.randomUUID` ist
+// nur in Secure Contexts (HTTPS/localhost) verfuegbar und wuerde bei direktem
+// HTTP-Zugriff auf den Container (z. B. http://192.168.1.67:…) fehlschlagen.
+let imageSectionCounter = 0;
+function newImageSection(): SiteSection {
+  imageSectionCounter += 1;
+  return {
+    key: `img-${Date.now().toString(36)}-${imageSectionCounter.toString(36)}`,
+    type: "image",
+    enabled: true,
+    imageId: null,
+    caption: "",
+    objectPosition: "center",
+    objectFit: "cover",
+  };
+}
+
 interface Props {
   initial: SiteContent;
   images: ImageRow[];
@@ -68,10 +85,7 @@ export default function ContentForm({ initial, images }: Props) {
   function addImageSection() {
     setContent((prev) => ({
       ...prev,
-      sections: [
-        ...prev.sections,
-        { key: crypto.randomUUID(), type: "image", enabled: true, imageId: null, caption: "" },
-      ],
+      sections: [...prev.sections, newImageSection()],
     }));
   }
 
@@ -179,42 +193,56 @@ export default function ContentForm({ initial, images }: Props) {
                 }
                 setDraggedIndex(null);
               }}
-              className={`flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 ${
+              className={`rounded-lg border border-border bg-background px-3 py-2 ${
                 draggedIndex === index ? "opacity-50" : ""
               }`}
             >
-              <span className="cursor-grab text-muted" aria-hidden>
-                ⠿
-              </span>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => moveSection(index, index - 1)}
-                  disabled={index === 0}
-                  className="rounded border border-border px-2 text-muted hover:text-foreground disabled:opacity-30"
-                  aria-label="Nach oben"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  onClick={() => moveSection(index, index + 1)}
-                  disabled={index === content.sections.length - 1}
-                  className="rounded border border-border px-2 text-muted hover:text-foreground disabled:opacity-30"
-                  aria-label="Nach unten"
-                >
-                  ↓
-                </button>
+              <div className="flex items-center gap-2">
+                <span className="cursor-grab text-muted" aria-hidden>
+                  ⠿
+                </span>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => moveSection(index, index - 1)}
+                    disabled={index === 0}
+                    className="rounded border border-border px-2 text-muted hover:text-foreground disabled:opacity-30"
+                    aria-label="Nach oben"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveSection(index, index + 1)}
+                    disabled={index === content.sections.length - 1}
+                    className="rounded border border-border px-2 text-muted hover:text-foreground disabled:opacity-30"
+                    aria-label="Nach unten"
+                  >
+                    ↓
+                  </button>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={section.enabled}
+                  onChange={(e) => toggleSection(section.key, e.target.checked)}
+                  className="h-4 w-4 accent-[var(--accent)]"
+                />
+                <span className="flex-1 text-sm font-medium">
+                  {section.type === "image" ? "Bild" : section.type}
+                </span>
+                {section.type === "image" && (
+                  <button
+                    type="button"
+                    onClick={() => removeSection(section.key)}
+                    className="shrink-0 rounded-lg border border-border px-3 text-muted hover:text-red-600"
+                    aria-label="Sektion entfernen"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
-              <input
-                type="checkbox"
-                checked={section.enabled}
-                onChange={(e) => toggleSection(section.key, e.target.checked)}
-                className="h-4 w-4 accent-[var(--accent)]"
-              />
-              <span className="flex-1 text-sm font-medium">{section.type}</span>
               {section.type === "image" && (
-                <div className="flex flex-1 items-center gap-2">
+                <div className="mt-2 grid w-full gap-2 md:grid-cols-2">
                   <select
                     value={section.imageId ?? ""}
                     onChange={(e) =>
@@ -237,14 +265,33 @@ export default function ContentForm({ initial, images }: Props) {
                     placeholder="Bildunterschrift"
                     className={fieldClass}
                   />
-                  <button
-                    type="button"
-                    onClick={() => removeSection(section.key)}
-                    className="shrink-0 rounded-lg border border-border px-3 text-muted hover:text-red-600"
-                    aria-label="Sektion entfernen"
+                  <select
+                    value={section.objectPosition ?? "center"}
+                    onChange={(e) =>
+                      updateImageSection(section.key, { objectPosition: e.target.value })
+                    }
+                    className={fieldClass}
+                    aria-label="Bildfokus"
                   >
-                    ✕
-                  </button>
+                    <option value="center">Bildfokus: Mitte</option>
+                    <option value="top">Bildfokus: Oben</option>
+                    <option value="bottom">Bildfokus: Unten</option>
+                    <option value="left">Bildfokus: Links</option>
+                    <option value="right">Bildfokus: Rechts</option>
+                  </select>
+                  <select
+                    value={section.objectFit ?? "cover"}
+                    onChange={(e) =>
+                      updateImageSection(section.key, {
+                        objectFit: e.target.value as "cover" | "contain",
+                      })
+                    }
+                    className={fieldClass}
+                    aria-label="Darstellung"
+                  >
+                    <option value="cover">Darstellung: Zuschneiden</option>
+                    <option value="contain">Darstellung: Komplett einpassen</option>
+                  </select>
                 </div>
               )}
             </li>

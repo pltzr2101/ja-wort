@@ -26,6 +26,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
     "--muted": theme.colors.muted,
     "--surface": theme.colors.surface,
     "--border": theme.colors.border,
+    "--display-font": theme.fonts.display,
+    "--body-font": theme.fonts.body,
   } as CSSProperties;
 
   return (

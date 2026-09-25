@@ -69,4 +69,28 @@ describe("normalizeSections", () => {
     expect(normalizeSections("kaputt" as unknown)).toEqual(defaultContent.sections);
     expect(normalizeSections([{ bogus: true }])).toEqual(defaultContent.sections);
   });
+
+  it("erhaelt objectPosition/objectFit fuer Bild-Sektionen", () => {
+    const sections = normalizeSections([
+      {
+        key: "img-1",
+        type: "image",
+        enabled: true,
+        imageId: 1,
+        objectPosition: "top",
+        objectFit: "contain",
+      },
+    ]);
+    const image = sections.find((s) => s.type === "image");
+    expect(image?.objectPosition).toBe("top");
+    expect(image?.objectFit).toBe("contain");
+  });
+
+  it("verwirft ungueltige objectFit-Werte", () => {
+    const sections = normalizeSections([
+      { key: "img-1", type: "image", enabled: true, imageId: 1, objectFit: "bogus" },
+    ]);
+    const image = sections.find((s) => s.type === "image");
+    expect(image?.objectFit).toBeUndefined();
+  });
 });

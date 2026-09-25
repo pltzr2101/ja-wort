@@ -25,6 +25,10 @@ export interface SiteSection {
   enabled: boolean;
   imageId?: number | null;
   caption?: string;
+  /** CSS object-position fuer die Bild-Sektion ("center" | "top" | ...). */
+  objectPosition?: string;
+  /** "cover" (zuschneiden) oder "contain" (komplett einpassen). */
+  objectFit?: "cover" | "contain";
 }
 
 export interface SiteContent {

@@ -10,51 +10,76 @@ export interface ThemeColors {
   border: string;
 }
 
+/** Schrift-Paarung eines Themes (Referenzen auf die next/font-Variablen). */
+export interface ThemeFonts {
+  display: string;
+  body: string;
+}
+
 export interface Theme {
   id: ThemeId;
   name: string;
   colors: ThemeColors;
+  fonts: ThemeFonts;
 }
 
-/** Vorgefertigte Farb-Presets (Baukasten). Nur Farben, keine Layouts. */
+/**
+ * Vorgefertigte Design-Token-Presets (Baukasten).
+ *
+ * Jedes Preset unterscheidet sich deutlich in Farbe UND Schrift, damit der
+ * Unterschied beim Umschalten sofort sichtbar ist. `fonts.display`/`fonts.body`
+ * referenzieren die im Root-Layout registrierten next/font-CSS-Variablen.
+ */
 export const themes: Record<ThemeId, Theme> = {
   romantic: {
     id: "romantic",
     name: "Romantik",
     colors: {
-      accent: "#b76e79",
-      accentSoft: "#f3d9d4",
-      background: "#fdf8f5",
-      foreground: "#3d2c2c",
-      muted: "#8a7272",
+      accent: "#c2446b",
+      accentSoft: "#f6dbe3",
+      background: "#fdf6f7",
+      foreground: "#3a2630",
+      muted: "#96737e",
       surface: "#ffffff",
-      border: "#eadcd8",
+      border: "#f0d9df",
+    },
+    fonts: {
+      display: "var(--font-display)",
+      body: "var(--font-body-serif)",
     },
   },
   modern: {
     id: "modern",
     name: "Modern Minimal",
     colors: {
-      accent: "#1a1a1a",
-      accentSoft: "#e5e5e5",
+      accent: "#2563eb",
+      accentSoft: "#dbeafe",
       background: "#ffffff",
-      foreground: "#111111",
-      muted: "#6b6b6b",
-      surface: "#f7f7f7",
-      border: "#e2e2e2",
+      foreground: "#0f172a",
+      muted: "#64748b",
+      surface: "#f8fafc",
+      border: "#e2e8f0",
+    },
+    fonts: {
+      display: "var(--font-body)",
+      body: "var(--font-body)",
     },
   },
   rustic: {
     id: "rustic",
     name: "Rustikal",
     colors: {
-      accent: "#a47148",
-      accentSoft: "#e8d8c3",
-      background: "#faf6ef",
-      foreground: "#3f3328",
-      muted: "#8a7a68",
+      accent: "#5f7a4d",
+      accentSoft: "#e4ecdc",
+      background: "#faf9f4",
+      foreground: "#2e3528",
+      muted: "#7a826f",
       surface: "#ffffff",
-      border: "#e4d8c6",
+      border: "#e2e6d8",
+    },
+    fonts: {
+      display: "var(--font-display)",
+      body: "var(--font-body)",
     },
   },
   noir: {
@@ -68,6 +93,10 @@ export const themes: Record<ThemeId, Theme> = {
       muted: "#a8a8a8",
       surface: "#1e1e1e",
       border: "#2e2e2e",
+    },
+    fonts: {
+      display: "var(--font-display-alt)",
+      body: "var(--font-body)",
     },
   },
 };

@@ -61,6 +61,8 @@ export function normalizeSections(input: unknown): SiteSection[] {
     };
     if (typeof raw.imageId === "number") section.imageId = raw.imageId;
     if (typeof raw.caption === "string") section.caption = raw.caption;
+    if (typeof raw.objectPosition === "string") section.objectPosition = raw.objectPosition;
+    if (raw.objectFit === "cover" || raw.objectFit === "contain") section.objectFit = raw.objectFit;
     result.push(section);
   }
 

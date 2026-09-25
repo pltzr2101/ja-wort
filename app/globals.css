@@ -13,18 +13,20 @@
   --color-muted: var(--muted);
   --color-surface: var(--surface);
   --color-border: var(--border);
-  --font-sans: var(--font-body);
-  --font-serif: var(--font-display);
+  --font-sans: var(--body-font);
+  --font-serif: var(--display-font);
 }
 
 :root {
-  --accent: #b76e79;
-  --accent-soft: #f3d9d4;
-  --background: #fdf8f5;
-  --foreground: #3d2c2c;
-  --muted: #8a7272;
+  --accent: #c2446b;
+  --accent-soft: #f6dbe3;
+  --background: #fdf6f7;
+  --foreground: #3a2630;
+  --muted: #96737e;
   --surface: #ffffff;
-  --border: #eadcd8;
+  --border: #f0d9df;
+  --display-font: var(--font-display);
+  --body-font: var(--font-body);
 }
 
 html {

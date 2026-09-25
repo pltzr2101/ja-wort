@@ -16,12 +16,18 @@ export default function ImageSection({ section, images }: Props) {
   const image = images.find((item) => item.id === section.imageId);
   if (!image) return null;
 
+  const fit = section.objectFit ?? "cover";
+  const position = section.objectPosition ?? "center";
+
   return (
-    <section className="relative w-full overflow-hidden">
+    <section className="relative w-full overflow-hidden bg-surface">
       <img
         src={`/api/uploads/${image.filename}`}
         alt={section.caption ?? image.caption ?? "Bild"}
-        className="h-[50vh] w-full object-cover md:h-[70vh]"
+        style={{ objectPosition: position }}
+        className={`h-[50vh] w-full md:h-[70vh] ${
+          fit === "contain" ? "object-contain" : "object-cover"
+        }`}
       />
       {section.caption && (
         <div className="absolute inset-x-0 bottom-0 bg-black/40 px-6 py-4 text-center text-white">
