@@ -6,10 +6,6 @@ import { verifySession } from "./session";
  * direkt aus dem Request (synchron, kein next/headers noetig).
  */
 
-export function requireGuest(req: NextRequest): boolean {
-  return verifySession(req.cookies.get("guest_session")?.value)?.kind === "guest";
-}
-
 export function requireAdmin(req: NextRequest): boolean {
   return verifySession(req.cookies.get("admin_session")?.value)?.kind === "admin";
 }
@@ -20,7 +16,7 @@ export function requireAdmin(req: NextRequest): boolean {
  * Konsistent zum oeffentlichen `(site)`-Layout, das beiden Rollen den Zugriff
  * erlaubt (`kind !== null`). Noetig z. B. fuer das RSVP-Formular: Ein Admin,
  * der die oeffentliche Seite ansieht, darf die Anmeldung ebenfalls absenden –
- * ein reiner `requireGuest`-Check wuerde ihn faelschlich mit 401 abweisen.
+ * ein reiner Gast-Check wuerde ihn faelschlich mit 401 abweisen.
  */
 export function requireAnySession(req: NextRequest): boolean {
   return (

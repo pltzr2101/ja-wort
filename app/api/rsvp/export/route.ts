@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/api";
+import { escapeCsvCell } from "@/lib/csv";
 import { getDb } from "@/lib/db";
 
 interface RsvpRow {
@@ -40,7 +41,6 @@ export async function GET(req: NextRequest) {
     "Eingegangen",
   ];
 
-  const escape = (value: string): string => `"${value.replace(/"/g, '""')}"`;
   const lines = rows.map((row) =>
     [
       row.name,
@@ -53,11 +53,11 @@ export async function GET(req: NextRequest) {
       row.note ?? "",
       row.created_at,
     ]
-      .map(escape)
+      .map(escapeCsvCell)
       .join(";")
   );
 
-  const csv = `\uFEFF${[header.map(escape).join(";"), ...lines].join("\n")}`;
+  const csv = `\uFEFF${[header.map(escapeCsvCell).join(";"), ...lines].join("\n")}`;
 
   return new NextResponse(csv, {
     headers: {

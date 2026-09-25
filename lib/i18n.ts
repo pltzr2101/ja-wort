@@ -26,7 +26,6 @@ export const dict = {
       networkError: "Netzwerkfehler. Bitte versuche es erneut.",
     },
     nav: {
-      story: "Story",
       gallery: "Galerie",
       schedule: "Ablauf",
       rsvp: "Zu-/Absage",
@@ -79,7 +78,6 @@ export const dict = {
       networkError: "네트워크 오류입니다. 다시 시도해 주세요.",
     },
     nav: {
-      story: "이야기",
       gallery: "갤러리",
       schedule: "일정",
       rsvp: "참석 여부",
