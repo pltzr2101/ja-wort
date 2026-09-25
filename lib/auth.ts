@@ -50,3 +50,13 @@ export function verifyGuestPassword(input: string): boolean {
   if (a.length !== b.length) return false;
   return crypto.timingSafeEqual(a, b);
 }
+
+/**
+ * Gibt an, ob das Gaeste-Gate (Passwort vor der Website) aktiv ist.
+ * Standard: aktiv (true). Ueber die Umgebungsvariable `GUEST_GATE_ENABLED=false`
+ * kann das Gate deaktiviert werden, damit die Seite ohne Passwort erreichbar
+ * ist. Der Admin-Bereich bleibt davon unberuehrt und weiterhin geschuetzt.
+ */
+export function isGuestGateEnabled(): boolean {
+  return process.env.GUEST_GATE_ENABLED !== "false";
+}

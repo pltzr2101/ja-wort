@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { redirect } from "next/navigation";
+import { isGuestGateEnabled } from "@/lib/auth";
 import { getContent } from "@/lib/content";
 import { getTheme } from "@/lib/themes";
 import { getSessionKind } from "@/lib/server-auth";
@@ -9,14 +10,17 @@ export const dynamic = "force-dynamic";
 
 /**
  * Layout fuer die oeffentliche Hochzeits-Seite.
- * - Gaeste-Gate: ohne gueltige Session wird auf /gate weitergeleitet.
+ * - Gaeste-Gate: ohne gueltige Session wird auf /gate weitergeleitet –
+ *   jedoch nur, wenn das Gate aktiv ist (GUEST_GATE_ENABLED != "false").
  * - Setzt die Theme-Farben als CSS-Variablen auf dem Seiten-Wrapper.
  * - In der koreanischen Sprachvariante wird die Schrift auf die
  *   koreanische Font-Variable umgestellt.
  */
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const kind = await getSessionKind();
-  if (kind === null) redirect("/gate");
+  if (isGuestGateEnabled()) {
+    const kind = await getSessionKind();
+    if (kind === null) redirect("/gate");
+  }
 
   const locale = await getLocale();
   const content = getContent(locale);

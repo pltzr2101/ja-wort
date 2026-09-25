@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isGuestGateEnabled } from "@/lib/auth";
 import { getSessionKind } from "@/lib/server-auth";
 import { getDictionary } from "@/lib/i18n";
 import { getLocale } from "@/lib/locale";
@@ -7,8 +8,14 @@ import LanguageToggle from "@/components/LanguageToggle";
 
 export const dynamic = "force-dynamic";
 
-/** Anmeldeseite fuer Gaeste. Bereits Angemeldete werden weitergeleitet. */
+/**
+ * Anmeldeseite fuer Gaeste. Bereits Angemeldete werden weitergeleitet.
+ * Ist das Gaeste-Gate deaktiviert (GUEST_GATE_ENABLED=false), wird direkt
+ * auf die Website weitergeleitet, da hier keine Anmeldung noetig ist.
+ */
 export default async function GatePage() {
+  if (!isGuestGateEnabled()) redirect("/");
+
   const kind = await getSessionKind();
   if (kind !== null) redirect("/");
 

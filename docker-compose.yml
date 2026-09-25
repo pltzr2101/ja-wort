@@ -7,7 +7,10 @@ services:
       # Host-Port frei wählbar: auf dem Sammel-LXC belegt Open WebUI bereits 3000.
       - "${APP_PORT:-8095}:3000"
     environment:
-      - GUEST_PASSWORD=${GUEST_PASSWORD:?GUEST_PASSWORD fehlt}
+      # GUEST_PASSWORD ist optional, wenn das Gaeste-Gate deaktiviert ist.
+      - GUEST_PASSWORD=${GUEST_PASSWORD:-}
+      # Gaeste-Gate (Passwort vor der Website). "false" schaltet es ab.
+      - GUEST_GATE_ENABLED=${GUEST_GATE_ENABLED:-true}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD fehlt}
       - SESSION_SECRET=${SESSION_SECRET:-}
     volumes:

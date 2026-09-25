@@ -4,7 +4,7 @@ Eine passwortgeschuetzte, modulare Hochzeits-Website als **einzelner Docker-Cont
 Entwickelt fuer einfaches Deployment auf einem Proxmox-LXC ueber Portainer.
 
 - Oeffentliche Seite mit Galerie, Countdown, Ablauf, Karte und RSVP-Formular
-- **Gaeste-Gate**: gemeinsames Passwort fuer Freunde & Familie
+- **Gaeste-Gate**: gemeinsames Passwort fuer Freunde & Familie (per Konfiguration abschaltbar)
 - **Admin-Bereich**: Bilder hochladen, Texte/Theme anpassen (Baukasten), Anmeldungen einsehen & als CSV exportieren
 - Keine externen Dienste, keine API-Keys – Daten liegen in einer eingebetteten SQLite-Datei
 
@@ -52,9 +52,11 @@ bezogen und per Portainer deployt. Es ist kein lokaler Build noetig.
 3. **Portainer-Stack in 4 Schritten:**
    - _Stacks → Add stack → Name:_ `ja-wort`
    - _Build method:_ **Web editor**, YAML aus `docker-compose.yml` einfügen
-   - _Environment variables:_ `GUEST_PASSWORD` (Pflicht), `ADMIN_PASSWORD` (Pflicht),
-     `SESSION_SECRET` (optional, leer = wird automatisch erzeugt und in `./data`
-     persistiert), `APP_PORT` (optional, Default `8095`)
+   - _Environment variables:_ `GUEST_PASSWORD` (Pflicht, wenn das Gaeste-Gate aktiv
+     ist), `GUEST_GATE_ENABLED` (optional, Default `true`; `false` schaltet das
+     Passwort-Gate ab), `ADMIN_PASSWORD` (Pflicht), `SESSION_SECRET` (optional, leer =
+     wird automatisch erzeugt und in `./data` persistiert), `APP_PORT` (optional,
+     Default `8095`)
    - _Deploy the stack_
 
 4. **Port-Konflikt-Warnung:** Auf einem LXC, auf dem bereits Open WebUI läuft, ist
