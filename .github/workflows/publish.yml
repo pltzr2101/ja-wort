@@ -1,0 +1,51 @@
+name: Publish Image
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Image nach GHCR pushen
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Der Image-Name wird aus `github.repository` abgeleitet und von
+      # docker/metadata-action automatisch kleingeschrieben (GHCR erlaubt keine
+      # Grossbuchstaben).
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=short
+            type=semver,pattern={{version}}
+
+      # Nur linux/amd64, weil better-sqlite3 ein natives Modul ist und ein
+      # Multi-Arch-Build (z. B. arm64) QEMU-Emulation braeuchte.
+      # provenance/sbom: false, damit kein zusaetzliches Attestation-Manifest
+      # entsteht (verwirrt sonst aeltere Docker-Clients beim Pull).
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          provenance: false
+          sbom: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

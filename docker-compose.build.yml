@@ -1,0 +1,4 @@
+services:
+  ja-wort:
+    build: .
+    image: ja-wort:local

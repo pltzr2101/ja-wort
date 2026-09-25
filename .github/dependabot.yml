@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # Der `docker`-Block aktualisiert den Base-Image-Pin im Dockerfile
+  # (`node:22-bookworm-slim`). Gepinnte App-Dependencies (`next`,
+  # `better-sqlite3`) werden ueber den `npm`-Block abgedeckt.
+  # Dependabot ist hier der Ersatz fuer die SemVer-Logik, die Watchtower
+  # nicht besitzt.
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly

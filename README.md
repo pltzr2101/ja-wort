@@ -37,37 +37,74 @@ npm run dev                 # http://localhost:3000
 
 ## Deployment (Docker / Portainer)
 
-### 1. Image bauen & starten (docker compose)
+Die App wird als vorgefertigtes Image aus der GitHub Container Registry (GHCR)
+bezogen und per Portainer deployt. Es ist kein lokaler Build noetig.
 
-```bash
-GUEST_PASSWORD=mein-passwort ADMIN_PASSWORD=mein-admin-passwort docker compose up -d --build
-```
+1. **Voraussetzung:** Das Image liegt in GHCR: `ghcr.io/pltzr2101/ja-wort:latest`.
 
-Oder zuerst eine `.env`-Datei anlegen (siehe `.env.example`) und dann:
+2. **GHCR-Sichtbarkeit (Pflichtschritt, nicht automatisierbar):** Nach dem ersten
+   `publish.yml`-Lauf ist das Package **privat**. Entweder in GitHub unter
+   _Profil → Packages → ja-wort → Package settings → Change visibility → Public_
+   freigeben, **oder** in Portainer unter _Registries → Add registry → Custom_
+   `ghcr.io` mit GitHub-Benutzername und PAT (Scope `read:packages`) hinterlegen.
+   Ohne einen dieser Schritte liefert der Pull `unauthorized`.
 
-```bash
-docker compose up -d --build
-```
+3. **Portainer-Stack in 4 Schritten:**
+   - _Stacks → Add stack → Name:_ `ja-wort`
+   - _Build method:_ **Web editor**, YAML aus `docker-compose.yml` einfügen
+   - _Environment variables:_ `GUEST_PASSWORD` (Pflicht), `ADMIN_PASSWORD` (Pflicht),
+     `SESSION_SECRET` (optional, leer = wird automatisch erzeugt und in `./data`
+     persistiert), `APP_PORT` (optional, Default `8095`)
+   - _Deploy the stack_
 
-### 2. Portainer (Stack)
+4. **Port-Konflikt-Warnung:** Auf einem LXC, auf dem bereits Open WebUI läuft, ist
+   Port **3000 belegt**. Der Host-Port wird über `APP_PORT` gesteuert (Default `8095`).
 
-In Portainer unter **Stacks → Add stack** den Inhalt von `docker-compose.yml`
-einfuegen und die beiden Umgebungsvariablen setzen:
+5. **HTTPS ist für den Login zwingend:** Der Container läuft mit
+   `NODE_ENV=production`, wodurch alle Session-Cookies mit dem `Secure`-Flag
+   gesetzt werden. Ein Aufruf über `http://<LXC-IP>:<APP_PORT>` führt daher zu
+   einem stummen Login-Fehlschlag (man landet wieder im Gäste-Gate). Verifiziert
+   werden muss über die Cloudflare-Domain (HTTPS) oder einen HTTPS-Tunnel.
 
-| Variable         | Pflicht | Beschreibung                                       |
-| ---------------- | ------- | -------------------------------------------------- |
-| `GUEST_PASSWORD` | Ja      | Gemeinsames Passwort fuer Gaeste                   |
-| `ADMIN_PASSWORD` | Ja      | Passwort fuer den Admin-Bereich                    |
-| `SESSION_SECRET` | Nein    | Signierschluessel (wird sonst automatisch erzeugt) |
+   > ⚠️ **Warnung:** Ohne HTTPS funktioniert die Anmeldung nicht – weder für
+   > Gäste noch für den Admin-Bereich.
 
-Das Volume `./data` enthaelt Datenbank, Bilder und ggf. den generierten
-Signierschluessel – beim Container-Update bleiben alle Daten erhalten.
+   Cloudflare-Einrichtung (einmalig): Domain anlegen, `A`-Record auf die
+   öffentliche IP des LXC zeigen lassen, Proxy (orange Wolke) aktivieren.
+   Optional: **Cloudflare Access** als zusätzliche Schutzschicht vor `/admin`.
 
-### 3. Cloudflare (optional, empfohlen)
+6. **Persistenz:** Das **Named Volume `ja-wort-data`** enthält SQLite-Datenbank,
+   Uploads und ggf. den generierten `SESSION_SECRET`. Daten bleiben bei
+   Container-Updates erhalten. Alternativ als Bind-Mount:
+   `- /srv/ja-wort/data:/app/data` mit vorherigem
+   `mkdir -p /srv/ja-wort/data && chown 1001:1001 /srv/ja-wort/data`.
 
-1. Domain in Cloudflare anlegen, `A`-Record auf die oeffentliche IP des LXC zeigen lassen.
-2. Proxy (orange Wolke) aktivieren – damit laeuft die Seite ueber HTTPS.
-3. Optional: **Cloudflare Access** als zusaetzliche Schutzschicht vor dem Admin-Bereich.
+7. **Watchtower:** Auto-Update funktioniert nur, wenn das Label gesetzt ist
+   **und** der laufende Watchtower mit `WATCHTOWER_LABEL_ENABLE=true` startet
+   (`WATCHTOWER_POLL_INTERVAL=86400`, `WATCHTOWER_CLEANUP=true`, Socket-Mount
+   `/var/run/docker.sock`). Watchtower ist nur ein **Filter**, kein
+   Update-Auslöser — es aktualisiert **nur** den Tag `:latest`, nicht gepinnte
+   Versionen.
+
+8. **Backup vor Updates:**
+
+   ```bash
+   docker run --rm -v ja-wort-data:/d -v "$PWD":/b alpine tar czf /b/jawort-backup.tgz -C /d .
+   ```
+
+   Grund: Es gibt Datenbank-Migrationen – ein Backup stellt den Stand vor dem
+   Update wieder her.
+
+9. **Kein Doppelmanagement:** Entweder Watchtower **oder** Portainer-Redeploy für
+   Updates nutzen; beides gemischt kann Container und Stack-Zustand
+   auseinanderlaufen lassen.
+
+10. **Lokale Entwicklung** bleibt unverändert über
+    `npm install && cp .env.example .env && npm run dev`.
+
+11. **Lokaler Docker-Build (optional):** Mit der Override-Datei kann lokal
+    weiterhin gebaut werden, ohne den Registry-Flow zu stören:
+    `docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build`.
 
 ---
 
@@ -120,6 +157,7 @@ data/                 Laufzeitdaten (SQLite + Uploads, nicht in Git)
 ## Continuous Integration (GitHub Actions)
 
 - **`.github/workflows/ci.yml`** – Lint, Format, Tests und Build bei jedem Push/PR.
-- **`.github/workflows/docker.yml`** – baut das Docker-Image und prueft so das Dockerfile.
+- **`.github/workflows/docker.yml`** – Dockerfile-Build-Check auf PR.
+- **`.github/workflows/publish.yml`** – Image-Push nach GHCR auf `main` + Tags.
 
 Der Status ist im GitHub-Repository unter dem Reiter **Actions** einsehbar.

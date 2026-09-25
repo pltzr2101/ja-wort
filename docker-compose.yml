@@ -1,13 +1,21 @@
 services:
   ja-wort:
-    build: .
+    image: ghcr.io/pltzr2101/ja-wort:latest
     container_name: ja-wort
+    restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Host-Port frei wählbar: auf dem Sammel-LXC belegt Open WebUI bereits 3000.
+      - "${APP_PORT:-8095}:3000"
     environment:
       - GUEST_PASSWORD=${GUEST_PASSWORD:?GUEST_PASSWORD fehlt}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:?ADMIN_PASSWORD fehlt}
       - SESSION_SECRET=${SESSION_SECRET:-}
     volumes:
-      - ./data:/app/data
-    restart: unless-stopped
+      # Named Volume: Docker übernimmt die Besitzrechte (UID 1001 / nextjs) aus dem
+      # Image, dadurch ist kein manuelles chown vor dem Deploy nötig.
+      - ja-wort-data:/app/data
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+volumes:
+  ja-wort-data:
