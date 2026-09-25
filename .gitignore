@@ -20,6 +20,10 @@
 .DS_Store
 *.pem
 
+# agent workspace temp files
+.agents_tmp/
+.agent_tmp/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

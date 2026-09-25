@@ -12,6 +12,7 @@ import {
 import { LOCALES } from "@/lib/i18n";
 import type { ImageRow } from "@/lib/images";
 import { themeIds, themes } from "@/lib/themes";
+import ImageFocusControl from "./ImageFocusControl";
 import ImagePicker from "./ImagePicker";
 
 const fieldClass =
@@ -51,6 +52,13 @@ interface Props {
   initialDe: SiteContent;
   initialKo: SiteContent;
   images: ImageRow[];
+}
+
+/** URL eines Galerie-Bildes (oder null, wenn das Bild nicht existiert). */
+function imageUrl(images: ImageRow[], imageId: number | null | undefined): string | null {
+  if (imageId == null) return null;
+  const image = images.find((item) => item.id === imageId);
+  return image ? `/api/uploads/${image.filename}` : null;
 }
 
 /** Formular zum Bearbeiten aller Inhalte (Baukasten), zweisprachig. */
@@ -235,23 +243,16 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
                 ))}
               </select>
             </div>
-            <div>
-              <label htmlFor="heroObjectPosition" className={labelClass}>
-                Bildfokus (Titelbild)
-              </label>
-              <select
-                id="heroObjectPosition"
-                value={content.heroObjectPosition}
-                onChange={(e) => setField("heroObjectPosition", e.target.value)}
-                className={fieldClass}
-              >
-                <option value="center">Mitte</option>
-                <option value="top">Oben</option>
-                <option value="bottom">Unten</option>
-                <option value="left">Links</option>
-                <option value="right">Rechts</option>
-              </select>
-            </div>
+          </div>
+          <div className="mt-4">
+            <ImageFocusControl
+              imageSrc={imageUrl(images, images[0]?.id)}
+              value={content.heroObjectPosition}
+              onChange={(value) => setField("heroObjectPosition", value)}
+              desktopAspectClass="aspect-[2/1]"
+              mobileAspectClass="aspect-[3/4]"
+              label="Bildfokus (Titelbild)"
+            />
           </div>
         </section>
       )}
@@ -348,32 +349,20 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
                   )}
                 </div>
                 {section.type === "image" && (
-                  <div className="mt-2 grid w-full gap-2 md:grid-cols-2">
-                    <ImagePicker
-                      images={images}
-                      value={section.imageId}
-                      onChange={(imageId) => updateSection(section.key, { imageId })}
-                    />
-                    <input
-                      value={section.caption ?? ""}
-                      onChange={(e) => updateSection(section.key, { caption: e.target.value })}
-                      placeholder="Bildunterschrift"
-                      className={fieldClass}
-                    />
-                    <select
-                      value={section.objectPosition ?? "center"}
-                      onChange={(e) =>
-                        updateSection(section.key, { objectPosition: e.target.value })
-                      }
-                      className={fieldClass}
-                      aria-label="Bildfokus"
-                    >
-                      <option value="center">Bildfokus: Mitte</option>
-                      <option value="top">Bildfokus: Oben</option>
-                      <option value="bottom">Bildfokus: Unten</option>
-                      <option value="left">Bildfokus: Links</option>
-                      <option value="right">Bildfokus: Rechts</option>
-                    </select>
+                  <div className="mt-2 grid w-full gap-2">
+                    <div className="grid gap-2 md:grid-cols-2">
+                      <ImagePicker
+                        images={images}
+                        value={section.imageId}
+                        onChange={(imageId) => updateSection(section.key, { imageId })}
+                      />
+                      <input
+                        value={section.caption ?? ""}
+                        onChange={(e) => updateSection(section.key, { caption: e.target.value })}
+                        placeholder="Bildunterschrift"
+                        className={fieldClass}
+                      />
+                    </div>
                     <select
                       value={section.objectFit ?? "cover"}
                       onChange={(e) =>
@@ -387,6 +376,14 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
                       <option value="cover">Darstellung: Zuschneiden</option>
                       <option value="contain">Darstellung: Komplett einpassen</option>
                     </select>
+                    <ImageFocusControl
+                      imageSrc={imageUrl(images, section.imageId)}
+                      value={section.objectPosition ?? "center"}
+                      onChange={(value) => updateSection(section.key, { objectPosition: value })}
+                      desktopAspectClass="aspect-[16/9]"
+                      mobileAspectClass="aspect-[3/4]"
+                      label="Bildfokus"
+                    />
                   </div>
                 )}
                 {section.type === "text" && (
