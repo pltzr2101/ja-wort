@@ -19,7 +19,7 @@ export default async function Page() {
       <main>
         <SectionRenderer content={content} images={images} locale={locale} />
       </main>
-      <SiteFooter content={content} locale={locale} />
+      <SiteFooter content={content} />
     </>
   );
 }

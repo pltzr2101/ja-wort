@@ -1,5 +1,6 @@
 import {
   defaultContent,
+  defaultContentKo,
   defaultSections,
   sectionOrder,
   type Locale,
@@ -12,6 +13,11 @@ import { getDb } from "./db";
 /** DB-Key eines Sprach-Inhaltssatzes. */
 function rowKey(locale: Locale): string {
   return `site:${locale}`;
+}
+
+/** Standard-Inhaltssatz fuer eine Sprache (Fallback ohne DB-Daten). */
+export function defaultForLocale(locale: Locale): SiteContent {
+  return locale === "ko" ? defaultContentKo : defaultContent;
 }
 
 const SECTION_TYPES: SectionType[] = [...sectionOrder, "image", "text"];
@@ -149,27 +155,52 @@ export function mergeContent(base: SiteContent, override: Partial<SiteContent>):
 
 /**
  * Liest einen Sprach-Inhaltssatz (Defaults + DB-Ueberschreibungen).
- * Faellt auf die Defaults zurueck, wenn noch nichts gespeichert wurde.
+ * Faellt auf die sprachabhaengigen Defaults zurueck, wenn nichts gespeichert
+ * wurde.
  */
 function readContent(locale: Locale): SiteContent {
+  const fallback = defaultForLocale(locale);
   try {
     const row = getDb()
       .prepare("SELECT value_json FROM content WHERE key = ?")
       .get(rowKey(locale)) as { value_json: string } | undefined;
 
-    if (!row) return defaultContent;
+    if (!row) return fallback;
 
     const parsed = JSON.parse(row.value_json) as Partial<SiteContent>;
-    return mergeContent(defaultContent, parsed);
+    return mergeContent(fallback, parsed);
   } catch {
-    return defaultContent;
+    return fallback;
   }
 }
 
 /**
- * Liest die Inhalte fuer eine Sprache. Theme, Titelbild-Fokus und Sektionen
- * sind sprachuebergreifend geteilt und kommen immer aus dem deutschen
- * Inhaltssatz, damit Design und Aufbau in beiden Sprachen identisch bleiben.
+ * Uebernimmt die Sektions-Struktur aus dem deutschen Inhaltssatz und setzt nur
+ * fuer Text-Sektionen (Titel/Text) die sprachabhaengigen Werte ein. So bleibt
+ * Aufbau/Reihenfolge identisch, waehrend Textbloecke pro Sprache gepflegt
+ * werden koennen. Fehlt in der Zielsprache eine Text-Sektion (z. B. neu in DE
+ * angelegt), faellt sie auf den deutschen Text zurueck.
+ */
+function mergeTextSections(deSections: SiteSection[], localSections: SiteSection[]): SiteSection[] {
+  return deSections.map((deSection) => {
+    if (deSection.type !== "text") return deSection;
+    const local = localSections.find(
+      (section) => section.type === "text" && section.key === deSection.key
+    );
+    if (!local) return deSection;
+    return {
+      ...deSection,
+      title: local.title,
+      text: local.text,
+    };
+  });
+}
+
+/**
+ * Liest die Inhalte fuer eine Sprache. Theme, Titelbild-Fokus und die
+ * Sektions-Struktur sind sprachuebergreifend geteilt und kommen immer aus dem
+ * deutschen Inhaltssatz; nur die Texte der Text-Sektionen sind pro Sprache
+ * getrennt.
  */
 export function getContent(locale: Locale = "de"): SiteContent {
   const content = readContent(locale);
@@ -180,7 +211,7 @@ export function getContent(locale: Locale = "de"): SiteContent {
     ...content,
     theme: de.theme,
     heroObjectPosition: de.heroObjectPosition,
-    sections: de.sections,
+    sections: mergeTextSections(de.sections, content.sections),
   };
 }
 

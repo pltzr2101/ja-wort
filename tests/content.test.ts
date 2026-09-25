@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { defaultContent, type SiteContent } from "@/content/default";
-import { mergeContent, normalizeSections } from "@/lib/content";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { defaultContent, defaultContentKo, type SiteContent } from "@/content/default";
+import { getContent, mergeContent, normalizeSections, saveContent } from "@/lib/content";
+import { getDb } from "@/lib/db";
 
 describe("mergeContent", () => {
   it("behaelt Defaults bei leerem Override", () => {
@@ -128,5 +129,62 @@ describe("mergeContent (Story-Migration)", () => {
     const text = merged.sections.find((s) => s.type === "text");
     expect(text?.title).toBe("Our Story");
     expect(text?.text).toBe("A long text");
+  });
+});
+
+describe("sprachabhaengige Inhalte", () => {
+  beforeEach(() => {
+    getDb().prepare("DELETE FROM content").run();
+  });
+
+  afterEach(() => {
+    getDb().prepare("DELETE FROM content").run();
+  });
+
+  it("liefert koreanische Defaults fuer Ablauf und FAQ", () => {
+    expect(defaultContentKo.scheduleTitle).toBe("일정");
+    expect(defaultContentKo.faqTitle).toBe("FAQ");
+    expect(defaultContent.faqTitle).toBe("FAQ");
+  });
+
+  it("getContent('ko') liefert koreanische Standardtexte ohne DB-Daten", () => {
+    const ko = getContent("ko");
+    expect(ko.scheduleTitle).toBe("일정");
+    expect(ko.faqTitle).toBe("FAQ");
+    const text = ko.sections.find((s) => s.type === "text");
+    expect(text?.title).toBe("우리의 이야기");
+  });
+
+  it("pflegt Textbloecke pro Sprache getrennt", () => {
+    const de = { ...defaultContent };
+    de.sections = de.sections.map((s) =>
+      s.type === "text" ? { ...s, title: "Unsere Geschichte", text: "DE Text" } : s
+    );
+    saveContent(de, "de");
+
+    const ko = { ...defaultContentKo };
+    ko.sections = ko.sections.map((s) =>
+      s.type === "text" ? { ...s, title: "우리의 이야기", text: "KO Text" } : s
+    );
+    saveContent(ko, "ko");
+
+    const result = getContent("ko");
+    const text = result.sections.find((s) => s.type === "text");
+    expect(text?.title).toBe("우리의 이야기");
+    expect(text?.text).toBe("KO Text");
+  });
+
+  it("neue DE-Text-Sektion ohne KO-Entsprechung faellt auf DE-Text zurueck", () => {
+    const de = { ...defaultContent };
+    de.sections = [
+      ...de.sections,
+      { key: "text-extra", type: "text", enabled: true, title: "Neu", text: "DE neu" },
+    ];
+    saveContent(de, "de");
+
+    const result = getContent("ko");
+    const text = result.sections.find((s) => s.key === "text-extra");
+    expect(text?.title).toBe("Neu");
+    expect(text?.text).toBe("DE neu");
   });
 });

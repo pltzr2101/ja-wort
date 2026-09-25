@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { defaultContent, type Locale, type SiteContent } from "@/content/default";
+import { type Locale, type SiteContent } from "@/content/default";
 import { requireAdmin } from "@/lib/api";
-import { getContent, mergeContent, saveContent } from "@/lib/content";
+import { defaultForLocale, getContent, mergeContent, saveContent } from "@/lib/content";
 
 /** Liest die Sprache aus dem Query-Parameter (Default: de). */
 function parseLocale(req: NextRequest): Locale {
@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest) {
   }
 
   const locale = parseLocale(req);
-  const merged = mergeContent(defaultContent, body);
+  const merged = mergeContent(defaultForLocale(locale), body);
   saveContent(merged, locale);
   return NextResponse.json({ ok: true, content: getContent(locale) });
 }

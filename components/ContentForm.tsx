@@ -198,8 +198,8 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
         </div>
         {locale === "ko" && (
           <p className="mt-3 text-sm text-muted">
-            Theme, Titelbild-Fokus und Sektionen werden in beiden Sprachen geteilt und unter
-            „Deutsch“ bearbeitet.
+            Theme, Titelbild-Fokus, Anordnung und Bild-Sektionen werden in beiden Sprachen geteilt
+            und unter „Deutsch“ bearbeitet. Die Texte der Textblöcke werden pro Sprache gepflegt.
           </p>
         )}
       </section>
@@ -397,6 +397,40 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {locale === "ko" && (
+        <section className="rounded-xl border border-border bg-surface p-6">
+          <h2 className="font-serif text-xl font-semibold">Textblöcke</h2>
+          <p className="mt-2 text-sm text-muted">
+            Die Texte der Textblöcke werden pro Sprache gepflegt. Anzahl und Reihenfolge werden
+            unter „Deutsch“ festgelegt.
+          </p>
+          <div className="mt-4 space-y-4">
+            {content.sections
+              .filter((section) => section.type === "text")
+              .map((section) => (
+                <div
+                  key={section.key}
+                  className="rounded-lg border border-border bg-background p-4"
+                >
+                  <input
+                    value={section.title ?? ""}
+                    onChange={(e) => updateSection(section.key, { title: e.target.value })}
+                    placeholder="Überschrift (optional)"
+                    className={fieldClass}
+                  />
+                  <textarea
+                    value={section.text ?? ""}
+                    onChange={(e) => updateSection(section.key, { text: e.target.value })}
+                    rows={4}
+                    placeholder="Text"
+                    className={`${fieldClass} mt-2`}
+                  />
+                </div>
+              ))}
+          </div>
         </section>
       )}
 

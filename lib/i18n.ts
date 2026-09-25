@@ -39,7 +39,6 @@ export const dict = {
     countdown: { days: "Tage", hours: "Stunden", minutes: "Minuten", seconds: "Sekunden" },
     gallery: { title: "Galerie" },
     map: { iframeTitle: "Karte der Location" },
-    footer: { madeWith: "Mit Liebe gemacht · Powered by JaWort" },
     rsvp: {
       name: "Vor- und Nachname",
       namePlaceholder: "Vor- und Nachname",
@@ -90,7 +89,6 @@ export const dict = {
     countdown: { days: "일", hours: "시간", minutes: "분", seconds: "초" },
     gallery: { title: "갤러리" },
     map: { iframeTitle: "행사장 지도" },
-    footer: { madeWith: "사랑을 담아 · Powered by JaWort" },
     rsvp: {
       name: "성함",
       namePlaceholder: "성함",
