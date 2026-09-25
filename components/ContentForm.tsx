@@ -35,6 +35,18 @@ function newImageSection(): SiteSection {
   };
 }
 
+let textSectionCounter = 0;
+function newTextSection(): SiteSection {
+  textSectionCounter += 1;
+  return {
+    key: `text-${Date.now().toString(36)}-${textSectionCounter.toString(36)}`,
+    type: "text",
+    enabled: true,
+    title: "",
+    text: "",
+  };
+}
+
 interface Props {
   initialDe: SiteContent;
   initialKo: SiteContent;
@@ -83,7 +95,7 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
     }));
   }
 
-  function updateImageSection(key: string, patch: Partial<SiteSection>) {
+  function updateSection(key: string, patch: Partial<SiteSection>) {
     setContent((prev) => ({
       ...prev,
       sections: prev.sections.map((s) => (s.key === key ? { ...s, ...patch } : s)),
@@ -101,6 +113,13 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
     setContent((prev) => ({
       ...prev,
       sections: [...prev.sections, newImageSection()],
+    }));
+  }
+
+  function addTextSection() {
+    setContent((prev) => ({
+      ...prev,
+      sections: [...prev.sections, newTextSection()],
     }));
   }
 
@@ -229,15 +248,24 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
 
       {locale === "de" && (
         <section className="rounded-xl border border-border bg-surface p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <h2 className="font-serif text-xl font-semibold">Sektionen</h2>
-            <button
-              type="button"
-              onClick={addImageSection}
-              className="rounded-full bg-accent px-4 py-2 text-xs font-medium uppercase tracking-widest text-white hover:opacity-90"
-            >
-              + Bild-Sektion
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={addTextSection}
+                className="rounded-full bg-accent px-4 py-2 text-xs font-medium uppercase tracking-widest text-white hover:opacity-90"
+              >
+                + Text-Sektion
+              </button>
+              <button
+                type="button"
+                onClick={addImageSection}
+                className="rounded-full bg-accent px-4 py-2 text-xs font-medium uppercase tracking-widest text-white hover:opacity-90"
+              >
+                + Bild-Sektion
+              </button>
+            </div>
           </div>
           <p className="mt-2 text-sm text-muted">
             Reihenfolge per Drag &amp; Drop oder mit den Pfeilen aendern.
@@ -290,9 +318,13 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
                     className="h-4 w-4 accent-[var(--accent)]"
                   />
                   <span className="flex-1 text-sm font-medium">
-                    {section.type === "image" ? "Bild" : section.type}
+                    {section.type === "image"
+                      ? "Bild"
+                      : section.type === "text"
+                        ? "Text"
+                        : section.type}
                   </span>
-                  {section.type === "image" && (
+                  {(section.type === "image" || section.type === "text") && (
                     <button
                       type="button"
                       onClick={() => removeSection(section.key)}
@@ -308,18 +340,18 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
                     <ImagePicker
                       images={images}
                       value={section.imageId}
-                      onChange={(imageId) => updateImageSection(section.key, { imageId })}
+                      onChange={(imageId) => updateSection(section.key, { imageId })}
                     />
                     <input
                       value={section.caption ?? ""}
-                      onChange={(e) => updateImageSection(section.key, { caption: e.target.value })}
+                      onChange={(e) => updateSection(section.key, { caption: e.target.value })}
                       placeholder="Bildunterschrift"
                       className={fieldClass}
                     />
                     <select
                       value={section.objectPosition ?? "center"}
                       onChange={(e) =>
-                        updateImageSection(section.key, { objectPosition: e.target.value })
+                        updateSection(section.key, { objectPosition: e.target.value })
                       }
                       className={fieldClass}
                       aria-label="Bildfokus"
@@ -333,7 +365,7 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
                     <select
                       value={section.objectFit ?? "cover"}
                       onChange={(e) =>
-                        updateImageSection(section.key, {
+                        updateSection(section.key, {
                           objectFit: e.target.value as "cover" | "contain",
                         })
                       }
@@ -343,6 +375,23 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
                       <option value="cover">Darstellung: Zuschneiden</option>
                       <option value="contain">Darstellung: Komplett einpassen</option>
                     </select>
+                  </div>
+                )}
+                {section.type === "text" && (
+                  <div className="mt-2 grid w-full gap-2">
+                    <input
+                      value={section.title ?? ""}
+                      onChange={(e) => updateSection(section.key, { title: e.target.value })}
+                      placeholder="Überschrift (optional)"
+                      className={fieldClass}
+                    />
+                    <textarea
+                      value={section.text ?? ""}
+                      onChange={(e) => updateSection(section.key, { text: e.target.value })}
+                      rows={4}
+                      placeholder="Text"
+                      className={fieldClass}
+                    />
                   </div>
                 )}
               </li>
@@ -408,33 +457,6 @@ export default function ContentForm({ initialDe, initialKo, images }: Props) {
             id="heroSubtitle"
             value={content.heroSubtitle}
             onChange={(e) => setField("heroSubtitle", e.target.value)}
-            className={fieldClass}
-          />
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-border bg-surface p-6">
-        <h2 className="font-serif text-xl font-semibold">Story</h2>
-        <div className="mt-4">
-          <label htmlFor="storyTitle" className={labelClass}>
-            Titel
-          </label>
-          <input
-            id="storyTitle"
-            value={content.storyTitle}
-            onChange={(e) => setField("storyTitle", e.target.value)}
-            className={fieldClass}
-          />
-        </div>
-        <div className="mt-4">
-          <label htmlFor="storyText" className={labelClass}>
-            Text
-          </label>
-          <textarea
-            id="storyText"
-            rows={5}
-            value={content.storyText}
-            onChange={(e) => setField("storyText", e.target.value)}
             className={fieldClass}
           />
         </div>

@@ -1,5 +1,6 @@
 import {
   defaultContent,
+  defaultSections,
   sectionOrder,
   type Locale,
   type SectionType,
@@ -13,26 +14,38 @@ function rowKey(locale: Locale): string {
   return `site:${locale}`;
 }
 
-const SECTION_TYPES: SectionType[] = [...sectionOrder, "image"];
+const SECTION_TYPES: SectionType[] = [...sectionOrder, "image", "text"];
 
 function isSectionType(value: unknown): value is SectionType {
   return typeof value === "string" && SECTION_TYPES.includes(value as SectionType);
 }
 
-/** Standard-Sektionen (jede Singleton-Sektion genau einmal, aktiviert). */
-function defaultSections(): SiteSection[] {
-  return sectionOrder.map((type) => ({ key: type, type, enabled: true }));
+/**
+ * Loest den Roh-Typ einer Sektion auf. Der alte Singleton-Typ "story" wird
+ * dabei auf die wiederholbare Text-Sektion "text" migriert.
+ */
+function resolveType(raw: Record<string, unknown>): SectionType | null {
+  const candidate =
+    typeof raw.type === "string" ? raw.type : typeof raw.id === "string" ? raw.id : null;
+  if (candidate === "story") return "text";
+  return isSectionType(candidate) ? candidate : null;
 }
 
 /**
  * Normalisiert eine Sektions-Liste in das aktuelle Shape.
  *
  * Migriert abwaertskompatibel das alte Shape `{ id, enabled }[]` nach
- * `{ key, type, enabled }`. Singleton-Sektionen werden dedupliziert und bei
- * Fehlen wieder ergaenzt; `key`s werden bei Bedarf eindeutig gemacht. Damit
- * bleibt die Seite auch mit alten/kaputten DB-Daten immer renderbar.
+ * `{ key, type, enabled }` sowie den alten "story"-Singleton in eine
+ * "text"-Sektion (Titel/Text kommen aus den optionalen Legacy-Argumenten).
+ * Singleton-Sektionen werden dedupliziert und bei Fehlen wieder ergaenzt;
+ * `key`s werden bei Bedarf eindeutig gemacht. Damit bleibt die Seite auch mit
+ * alten/kaputten DB-Daten immer renderbar.
  */
-export function normalizeSections(input: unknown): SiteSection[] {
+export function normalizeSections(
+  input: unknown,
+  legacyStoryTitle?: string,
+  legacyStoryText?: string
+): SiteSection[] {
   if (!Array.isArray(input)) return defaultSections();
 
   const result: SiteSection[] = [];
@@ -44,10 +57,12 @@ export function normalizeSections(input: unknown): SiteSection[] {
     if (!item || typeof item !== "object") continue;
     const raw = item as Record<string, unknown>;
 
-    const type = isSectionType(raw.type) ? raw.type : isSectionType(raw.id) ? raw.id : null;
+    const rawType =
+      typeof raw.type === "string" ? raw.type : typeof raw.id === "string" ? raw.id : null;
+    const type = resolveType(raw);
     if (!type) continue;
 
-    if (type !== "image") {
+    if (type !== "image" && type !== "text") {
       if (seenSingleton.has(type)) continue;
       seenSingleton.add(type);
     }
@@ -69,8 +84,24 @@ export function normalizeSections(input: unknown): SiteSection[] {
     if (typeof raw.caption === "string") section.caption = raw.caption;
     if (typeof raw.objectPosition === "string") section.objectPosition = raw.objectPosition;
     if (raw.objectFit === "cover" || raw.objectFit === "contain") section.objectFit = raw.objectFit;
+    if (type === "text") {
+      const title =
+        typeof raw.title === "string"
+          ? raw.title
+          : rawType === "story"
+            ? legacyStoryTitle
+            : undefined;
+      if (title !== undefined) section.title = title;
+      const text =
+        typeof raw.text === "string" ? raw.text : rawType === "story" ? legacyStoryText : undefined;
+      if (text !== undefined) section.text = text;
+    }
     result.push(section);
   }
+
+  // Eine (kaputte) Liste ohne einzige gueltige Sektion faellt vollstaendig auf
+  // die Standard-Sektionen zurueck – konsistent zum Nicht-Array-Fall.
+  if (result.length === 0) return defaultSections();
 
   for (const type of sectionOrder) {
     if (!seenSingleton.has(type)) {
@@ -87,14 +118,32 @@ export function normalizeSections(input: unknown): SiteSection[] {
  * ignoriert, damit die Seite nie kaputtgeht.
  */
 export function mergeContent(base: SiteContent, override: Partial<SiteContent>): SiteContent {
+  // Alte Daten koennen noch die top-level Story-Felder enthalten; diese werden
+  // in die neue "text"-Sektion uebernommen und danach verworfen.
+  const legacy = override as Partial<SiteContent> & {
+    storyTitle?: unknown;
+    storyText?: unknown;
+  };
+  const legacyStoryTitle = typeof legacy.storyTitle === "string" ? legacy.storyTitle : undefined;
+  const legacyStoryText = typeof legacy.storyText === "string" ? legacy.storyText : undefined;
+
+  const sections = normalizeSections(
+    Array.isArray(override.sections) ? override.sections : base.sections,
+    legacyStoryTitle,
+    legacyStoryText
+  );
+
+  // Alte Story-Felder nicht in den persistierten Inhalt zurueckschreiben.
+  const cleanOverride: Record<string, unknown> = { ...override };
+  delete cleanOverride.storyTitle;
+  delete cleanOverride.storyText;
+
   return {
     ...base,
-    ...override,
+    ...cleanOverride,
     schedule: Array.isArray(override.schedule) ? override.schedule : base.schedule,
     faq: Array.isArray(override.faq) ? override.faq : base.faq,
-    sections: normalizeSections(
-      Array.isArray(override.sections) ? override.sections : base.sections
-    ),
+    sections,
   };
 }
 

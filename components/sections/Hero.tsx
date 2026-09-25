@@ -46,7 +46,12 @@ export default function Hero({
           background ? "text-white" : "text-foreground"
         }`}
       >
-        <p className="font-serif text-xl italic opacity-90 md:text-2xl">
+        {content.heroTitle.trim() !== "" && (
+          <p className="text-xs font-medium uppercase tracking-[0.4em] opacity-80 md:text-sm">
+            {content.heroTitle}
+          </p>
+        )}
+        <p className="mt-4 font-serif text-xl italic opacity-90 md:text-2xl">
           {formatDate(content.weddingDate, locale)}
         </p>
         <h1 className="font-serif mt-4 text-5xl font-semibold leading-tight md:text-7xl">

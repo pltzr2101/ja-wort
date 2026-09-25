@@ -6,7 +6,7 @@ export type Locale = "de" | "ko";
 export const LOCALES: Locale[] = ["de", "ko"];
 
 export type SectionType =
-  "hero" | "countdown" | "story" | "gallery" | "schedule" | "rsvp" | "map" | "faq" | "image";
+  "hero" | "countdown" | "gallery" | "schedule" | "rsvp" | "map" | "faq" | "image" | "text";
 
 export interface ScheduleItem {
   time: string;
@@ -20,9 +20,10 @@ export interface FaqItem {
 }
 
 /**
- * Eine (aktivierbare) Sektion der Website. Singleton-Sektionen (hero, story, ...)
- * haben eine eindeutige `key` gleich dem `type`; `image`-Sektionen sind beliebig
- * oft vorhanden und referenzieren ein Galerie-Bild ueber `imageId`.
+ * Eine (aktivierbare) Sektion der Website. Singleton-Sektionen (hero, gallery, ...)
+ * haben eine eindeutige `key` gleich dem `type`; `image`- und `text`-Sektionen sind
+ * beliebig oft vorhanden. Bild-Sektionen referenzieren ein Galerie-Bild ueber
+ * `imageId`, Text-Sektionen tragen optional `title` und `text` direkt.
  */
 export interface SiteSection {
   key: string;
@@ -34,6 +35,10 @@ export interface SiteSection {
   objectPosition?: string;
   /** "cover" (zuschneiden) oder "contain" (komplett einpassen). */
   objectFit?: "cover" | "contain";
+  /** Ueberschrift einer Text-Sektion (optional). */
+  title?: string;
+  /** Fliesstext einer Text-Sektion. */
+  text?: string;
 }
 
 export interface SiteContent {
@@ -44,8 +49,6 @@ export interface SiteContent {
   heroTitle: string;
   heroSubtitle: string;
   heroObjectPosition: string; // CSS object-position fuer das Hero-Titelbild
-  storyTitle: string;
-  storyText: string;
   scheduleTitle: string;
   schedule: ScheduleItem[];
   mapTitle: string;
@@ -57,17 +60,41 @@ export interface SiteContent {
   sections: SiteSection[];
 }
 
-/** Kanonische Default-Reihenfolge der Singleton-Sektionen (ohne "image"). */
+/** Kanonische Default-Reihenfolge der Singleton-Sektionen (ohne "image"/"text"). */
 export const sectionOrder: SectionType[] = [
   "hero",
   "countdown",
-  "story",
   "gallery",
   "schedule",
   "rsvp",
   "map",
   "faq",
 ];
+
+/**
+ * Standard-Sektionen: die Singleton-Sektionen in kanonischer Reihenfolge plus
+ * eine Beispiel-Text-Sektion (frueher "Story") direkt nach dem Countdown.
+ */
+export function defaultSections(): SiteSection[] {
+  const singletons: SiteSection[] = sectionOrder.map((type) => ({
+    key: type,
+    type,
+    enabled: true,
+  }));
+
+  return [
+    singletons[0],
+    singletons[1],
+    {
+      key: "text-story",
+      type: "text",
+      enabled: true,
+      title: "Unsere Geschichte",
+      text: "Hier koennt ihr ein paar Worte ueber euch schreiben – wie ihr euch kennengelernt habt und warum ihr diesen Tag gemeinsam feiern moechtet.",
+    },
+    ...singletons.slice(2),
+  ];
+}
 
 /** Standard-Inhalte. Koennen im Admin-Bereich ueberschrieben werden. */
 export const defaultContent: SiteContent = {
@@ -78,9 +105,6 @@ export const defaultContent: SiteContent = {
   heroTitle: "Wir heiraten!",
   heroSubtitle: "Anna & Jonas · 12. September 2026",
   heroObjectPosition: "center",
-  storyTitle: "Unsere Geschichte",
-  storyText:
-    "Hier koennt ihr ein paar Worte ueber euch schreiben – wie ihr euch kennengelernt habt und warum ihr diesen Tag gemeinsam feiern moechtet.",
   scheduleTitle: "Ablauf",
   schedule: [
     { time: "14:00", title: "Trauung", description: "Standesamt Musterstadt" },
@@ -98,5 +122,5 @@ export const defaultContent: SiteContent = {
   ],
   rsvpTitle: "Zu- oder Absage",
   rsvpSubtitle: "Bitte gebt uns bis zum 1. August 2026 Bescheid.",
-  sections: sectionOrder.map((type) => ({ key: type, type, enabled: true })),
+  sections: defaultSections(),
 };

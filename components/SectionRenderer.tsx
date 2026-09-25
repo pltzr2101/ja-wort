@@ -3,13 +3,13 @@ import type { Locale } from "@/lib/i18n";
 import type { ImageRow } from "@/lib/images";
 import Hero from "./sections/Hero";
 import Countdown from "./sections/Countdown";
-import Story from "./sections/Story";
 import Gallery from "./sections/Gallery";
 import Schedule from "./sections/Schedule";
 import RsvpSection from "./sections/RsvpSection";
 import Map from "./sections/Map";
 import Faq from "./sections/Faq";
 import ImageSection from "./sections/ImageSection";
+import TextSection from "./sections/TextSection";
 
 interface Props {
   content: SiteContent;
@@ -34,8 +34,6 @@ export default function SectionRenderer({ content, images, locale }: Props) {
               return <Hero key={section.key} content={content} images={images} locale={locale} />;
             case "countdown":
               return <Countdown key={section.key} date={content.weddingDate} locale={locale} />;
-            case "story":
-              return <Story key={section.key} content={content} />;
             case "gallery":
               return <Gallery key={section.key} images={galleryImages} locale={locale} />;
             case "schedule":
@@ -48,6 +46,8 @@ export default function SectionRenderer({ content, images, locale }: Props) {
               return <Faq key={section.key} content={content} />;
             case "image":
               return <ImageSection key={section.key} section={section} images={images} />;
+            case "text":
+              return <TextSection key={section.key} section={section} />;
             default:
               return null;
           }

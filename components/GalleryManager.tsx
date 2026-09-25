@@ -18,9 +18,9 @@ export default function GalleryManager({ initial }: Props) {
 
   async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const file = fileInputRef.current?.files?.[0];
-    if (!file) {
-      setError("Bitte waehle eine Datei aus.");
+    const files = Array.from(fileInputRef.current?.files ?? []);
+    if (files.length === 0) {
+      setError("Bitte waehle mindestens eine Datei aus.");
       return;
     }
 
@@ -28,7 +28,9 @@ export default function GalleryManager({ initial }: Props) {
     setError(null);
 
     const formData = new FormData();
-    formData.append("file", file);
+    for (const file of files) {
+      formData.append("file", file);
+    }
     formData.append("caption", caption);
 
     try {
@@ -40,8 +42,8 @@ export default function GalleryManager({ initial }: Props) {
         return;
       }
 
-      const data = (await res.json()) as { image: ImageRow };
-      setImages((prev) => [...prev, data.image]);
+      const data = (await res.json()) as { images: ImageRow[] };
+      setImages((prev) => [...prev, ...data.images]);
       setCaption("");
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch {
@@ -95,16 +97,17 @@ export default function GalleryManager({ initial }: Props) {
   return (
     <div className="space-y-8">
       <form onSubmit={handleUpload} className="rounded-xl border border-border bg-surface p-6">
-        <h2 className="font-serif text-xl font-semibold">Bild hochladen</h2>
+        <h2 className="font-serif text-xl font-semibold">Bilder hochladen</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
           <div>
             <label htmlFor="file" className="mb-1 block text-sm font-medium text-muted">
-              Bild (JPG, PNG oder WebP, max. 5 MB)
+              Bilder (JPG, PNG oder WebP, max. 5 MB je Datei)
             </label>
             <input
               id="file"
               ref={fileInputRef}
               type="file"
+              multiple
               accept="image/jpeg,image/png,image/webp"
               className="w-full text-sm text-muted file:mr-4 file:rounded-full file:border-0 file:bg-accent file:px-4 file:py-2 file:text-sm file:font-medium file:text-white"
             />

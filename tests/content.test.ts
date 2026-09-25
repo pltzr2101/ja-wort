@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultContent } from "@/content/default";
+import { defaultContent, type SiteContent } from "@/content/default";
 import { mergeContent, normalizeSections } from "@/lib/content";
 
 describe("mergeContent", () => {
@@ -92,5 +92,41 @@ describe("normalizeSections", () => {
     ]);
     const image = sections.find((s) => s.type === "image");
     expect(image?.objectFit).toBeUndefined();
+  });
+
+  it("migriert den alten story-Singleton in eine Text-Sektion", () => {
+    const sections = normalizeSections(
+      [{ key: "story", type: "story", enabled: true }],
+      "Unsere Geschichte",
+      "Ein langer Text"
+    );
+    const text = sections.find((s) => s.type === "text");
+    expect(text).toBeDefined();
+    expect(text?.title).toBe("Unsere Geschichte");
+    expect(text?.text).toBe("Ein langer Text");
+  });
+
+  it("erlaubt mehrere Text-Sektionen und erhaelt title/text", () => {
+    const sections = normalizeSections([
+      { key: "text-1", type: "text", enabled: true, title: "Titel 1", text: "Text 1" },
+      { key: "text-2", type: "text", enabled: true, text: "Text 2" },
+    ]);
+    const texts = sections.filter((s) => s.type === "text");
+    expect(texts).toHaveLength(2);
+    expect(texts.find((s) => s.key === "text-1")?.title).toBe("Titel 1");
+    expect(texts.find((s) => s.key === "text-2")?.title).toBeUndefined();
+  });
+});
+
+describe("mergeContent (Story-Migration)", () => {
+  it("uebernimmt storyTitle/storyText in eine Text-Sektion", () => {
+    const merged = mergeContent(defaultContent, {
+      storyTitle: "Our Story",
+      storyText: "A long text",
+      sections: [{ key: "story", type: "story", enabled: true }],
+    } as unknown as Partial<SiteContent>);
+    const text = merged.sections.find((s) => s.type === "text");
+    expect(text?.title).toBe("Our Story");
+    expect(text?.text).toBe("A long text");
   });
 });

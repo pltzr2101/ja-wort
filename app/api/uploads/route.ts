@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/api";
 import { addImage, deleteImage, getImages, reorderImages } from "@/lib/images";
-import { detectImageType, saveImage, validateImageFile } from "@/lib/upload";
+import { detectImageType, saveImage, validateImageFile, type ImageType } from "@/lib/upload";
 
 /** Listet alle Galerie-Bilder (nur Admin). */
 export async function GET(req: NextRequest) {
@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(getImages());
 }
 
-/** Laedt ein Bild hoch (nur Admin). */
+/** Laedt ein oder mehrere Bilder hoch (nur Admin). */
 export async function POST(req: NextRequest) {
   if (!requireAdmin(req)) {
     return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
@@ -22,27 +22,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Ungueltige Anfrage." }, { status: 400 });
   }
 
-  const file = formData.get("file");
-  if (!(file instanceof File)) {
+  const files = formData.getAll("file").filter((entry): entry is File => entry instanceof File);
+  if (files.length === 0) {
     return NextResponse.json({ error: "Keine Datei gefunden." }, { status: 400 });
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const error = validateImageFile(file.type, buffer);
-  if (error) {
-    return NextResponse.json({ error }, { status: 400 });
-  }
+  // Alle Dateien zuerst validieren, damit bei einer ungueltigen Datei keine
+  // Teilmenge gespeichert wird (Alles-oder-nichts).
+  const buffers: { buffer: Buffer; type: ImageType }[] = [];
+  for (const file of files) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const error = validateImageFile(file.type, buffer);
+    if (error) {
+      return NextResponse.json({ error }, { status: 400 });
+    }
 
-  const type = detectImageType(buffer);
-  if (!type) {
-    return NextResponse.json({ error: "Die Datei ist kein gueltiges Bild." }, { status: 400 });
+    const type = detectImageType(buffer);
+    if (!type) {
+      return NextResponse.json({ error: "Die Datei ist kein gueltiges Bild." }, { status: 400 });
+    }
+    buffers.push({ buffer, type });
   }
 
   const caption = formData.get("caption");
-  const filename = saveImage(buffer, type);
-  const image = addImage(filename, typeof caption === "string" ? caption.trim() || null : null);
+  const captionValue = typeof caption === "string" ? caption.trim() || null : null;
 
-  return NextResponse.json({ ok: true, image });
+  const images = buffers.map(({ buffer, type }) => {
+    const filename = saveImage(buffer, type);
+    return addImage(filename, captionValue);
+  });
+
+  return NextResponse.json({ ok: true, images });
 }
 
 /** Sortiert die Galerie-Bilder neu (nur Admin). */
