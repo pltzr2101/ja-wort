@@ -130,4 +130,30 @@ describe("RsvpForm", () => {
       needsAccommodation: null,
     });
   });
+
+  it("zeigt die Afterparty-Frage erst bei Zusage und sendet sie mit", async () => {
+    const user = userEvent.setup();
+    render(<RsvpForm locale="de" />);
+
+    // Vor der Zusage kein Afterparty-Feld sichtbar.
+    expect(screen.queryByLabelText(/Afterparty/)).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText(/Zu- oder Absage/), "yes");
+
+    const checkbox = screen.getByLabelText(/Afterparty/);
+    expect(checkbox).toBeInTheDocument();
+    expect(screen.getByText(/Beginn um ca. 21 Uhr/)).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText(/Vor- und Nachname/), "Max Mustermann");
+    await user.selectOptions(screen.getByLabelText(/Personenzahl/), "2");
+    const childrenGroup = screen.getByRole("group", { name: /Sind Kinder/ });
+    await user.click(within(childrenGroup).getByRole("radio", { name: "Nein" }));
+    await user.click(checkbox);
+
+    await user.click(screen.getByRole("button", { name: /Absenden/ }));
+
+    const [, init] = fetchMock.mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body.afterparty).toBe(true);
+  });
 });

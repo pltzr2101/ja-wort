@@ -11,6 +11,7 @@ interface FormState {
   hasChildren: "" | "yes" | "no";
   childrenAges: string;
   needsAccommodation: "" | "yes" | "no";
+  afterparty: "" | "yes";
   note: string;
   website: string; // Honeypot – muss leer bleiben
 }
@@ -23,6 +24,7 @@ const initialState: FormState = {
   hasChildren: "",
   childrenAges: "",
   needsAccommodation: "",
+  afterparty: "",
   note: "",
   website: "",
 };
@@ -64,6 +66,7 @@ export default function RsvpForm({ locale }: { locale: Locale }) {
       childrenAges: attendingYes && form.hasChildren === "yes" ? form.childrenAges : null,
       needsAccommodation:
         attendingYes && form.needsAccommodation !== "" ? form.needsAccommodation === "yes" : null,
+      afterparty: attendingYes && form.afterparty === "yes" ? true : null,
       note: form.note.trim() || null,
       website: form.website,
     };
@@ -261,6 +264,19 @@ export default function RsvpForm({ locale }: { locale: Locale }) {
               </label>
             </div>
           </fieldset>
+
+          <div>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={form.afterparty === "yes"}
+                onChange={(e) => set("afterparty", e.target.checked ? "yes" : "")}
+                className="h-4 w-4 accent-[var(--accent)]"
+              />
+              <span className="text-sm font-medium">{dict.afterparty}</span>
+            </label>
+            <p className="mt-2 text-sm text-muted">{dict.afterpartyHint}</p>
+          </div>
         </>
       )}
 

@@ -57,6 +57,8 @@ export const dict = {
       childrenAgesHint:
         "Bitte gib hier das Alter der Kinder an, damit wir ggf. Hochstühle und Kindermenüs planen können.",
       accommodation: "Benötigt ihr Unterstützung beim Finden einer passenden Unterkunft?",
+      afterparty: "Kommst du / ihr zur Afterparty?",
+      afterpartyHint: "Beginn um ca. 21 Uhr",
       note: "Nachricht oder Kontakt (optional)",
       notePlaceholder: "E-Mail oder Telefon für Rückfragen ...",
       submit: "Absenden",
@@ -108,6 +110,8 @@ export const dict = {
       childrenAgesPlaceholder: "예: 2살, 5살",
       childrenAgesHint: "유아용 의자와 어린이 메뉴를 준비하기 위해 어린이의 나이를 적어 주세요.",
       accommodation: "숙소를 찾는 데 도움이 필요하신가요?",
+      afterparty: "애프터파티에 참석하시나요?",
+      afterpartyHint: "저녁 9시 시작",
       note: "메시지 또는 연락처 (선택)",
       notePlaceholder: "연락처나 기타 문의사항 등",
       submit: "제출",

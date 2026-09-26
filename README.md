@@ -5,7 +5,7 @@ Entwickelt fuer einfaches Deployment auf einem Proxmox-LXC ueber Portainer.
 
 - Oeffentliche Seite mit Galerie, Countdown, Ablauf, Karte und RSVP-Formular
 - **Gaeste-Gate**: gemeinsames Passwort fuer Freunde & Familie (per Konfiguration abschaltbar)
-- **Admin-Bereich**: Bilder hochladen, Texte/Theme anpassen (Baukasten), Anmeldungen einsehen & als CSV exportieren
+- **Admin-Bereich**: Bilder hochladen, Texte/Theme anpassen (Baukasten), Anmeldungen einsehen, bearbeiten & als CSV exportieren
 - Keine externen Dienste, keine API-Keys – Daten liegen in einer eingebetteten SQLite-Datei
 
 ---
@@ -122,7 +122,7 @@ bezogen und per Portainer deployt. Es ist kein lokaler Build noetig.
 
 Im Admin-Bereich:
 
-- **Anmeldungen** – Liste aller RSVPs + `CSV exportieren` (importierbar in Google Sheets/Excel); einzelne Anmeldungen per rotem ✕ (mit Bestaetigung) loeschen
+- **Anmeldungen** – Liste aller RSVPs + `CSV exportieren` (importierbar in Google Sheets/Excel); einzelne Anmeldungen per Stift-Button (✎) in einem Formular bearbeiten oder per rotem ✕ (mit Bestaetigung) loeschen
 - **Inhalte** – Theme, Texte, Ablauf, Karten-URL, FAQ sowie Sektionen an/aus, per Pfeiltasten umsortieren und beliebig viele zusaetzliche „Bild“-Sektionen einfuegen; jede Bild-Sektion hat eigene Steuerung fuer Bildauswahl, Bildunterschrift, Bildfokus (object-position) und Darstellung (Zuschneiden/Komplett einpassen) – der Bildfokus (object-position) fuer das Titelbild sitzt im Feld „Bildfokus (Titelbild)“
 - **Galerie** – Bilder hochladen (JPG/PNG/WebP, max. 5 MB), loeschen und per Drag & Drop umsortieren (das erste Bild ist das Titelbild)
 

@@ -17,6 +17,7 @@ const rows: RsvpRow[] = [
     hasChildren: false,
     childrenAges: null,
     needsAccommodation: false,
+    afterparty: true,
     note: null,
     createdAt: "2026-09-01 10:00:00",
   },
@@ -29,6 +30,7 @@ const rows: RsvpRow[] = [
     hasChildren: null,
     childrenAges: null,
     needsAccommodation: null,
+    afterparty: null,
     note: null,
     createdAt: "2026-09-02 10:00:00",
   },
@@ -71,5 +73,61 @@ describe("RsvpTable", () => {
 
     await user.click(screen.getByRole("button", { name: /Anmeldung von Max Mustermann/ }));
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("zeigt die Afterparty-Angabe (Ja / Strich) in der Tabelle", () => {
+    render(<RsvpTable initial={rows} />);
+
+    // Header vorhanden
+    expect(screen.getByRole("columnheader", { name: "Afterparty" })).toBeInTheDocument();
+    // Max = Ja, Erika = keine Angabe (Strich)
+    const maxRow = screen.getByText("Max Mustermann").closest("tr");
+    const erikaRow = screen.getByText("Erika Beispiel").closest("tr");
+    expect(maxRow).toHaveTextContent("Ja");
+    expect(erikaRow).toHaveTextContent("–");
+  });
+
+  it("oeffnet das Bearbeiten-Formular mit vorbelegten Werten", async () => {
+    const user = userEvent.setup();
+    render(<RsvpTable initial={rows} />);
+
+    await user.click(screen.getByRole("button", { name: /Bearbeiten: Max Mustermann/ }));
+
+    expect(
+      screen.getByRole("dialog", { name: "Anmeldung von Max Mustermann bearbeiten" })
+    ).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Max Mustermann")).toBeInTheDocument();
+  });
+
+  it("schliesst das Bearbeiten-Formular ueber Abbrechen", async () => {
+    const user = userEvent.setup();
+    render(<RsvpTable initial={rows} />);
+
+    await user.click(screen.getByRole("button", { name: /Bearbeiten: Max Mustermann/ }));
+    await user.click(screen.getByRole("button", { name: "Abbrechen" }));
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("sendet beim Speichern einen PATCH mit id und allen Feldern", async () => {
+    const user = userEvent.setup();
+    render(<RsvpTable initial={rows} />);
+
+    await user.click(screen.getByRole("button", { name: /Bearbeiten: Max Mustermann/ }));
+    await user.click(screen.getByRole("button", { name: "Speichern" }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/rsvp",
+      expect.objectContaining({ method: "PATCH" })
+    );
+    const [, init] = fetchMock.mock.calls[0];
+    const body = JSON.parse(init.body as string);
+    expect(body).toMatchObject({
+      id: 1,
+      name: "Max Mustermann",
+      attending: "yes",
+      afterparty: true,
+    });
+    expect(mockRouter.refresh).toHaveBeenCalled();
   });
 });

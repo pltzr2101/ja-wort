@@ -15,6 +15,8 @@ export const rsvpSchema = z
     hasChildren: z.boolean().nullable().optional(),
     childrenAges: z.string().trim().max(200).nullable().optional(),
     needsAccommodation: z.boolean().nullable().optional(),
+    // Freiwillige Angabe: nur "Ja" (true) oder leer (null).
+    afterparty: z.boolean().nullable().optional(),
     note: z.string().trim().max(500).nullable().optional(),
     // Honeypot: muss leer bleiben, sonst Bot-Verdacht.
     website: z.string().max(0).optional().default(""),

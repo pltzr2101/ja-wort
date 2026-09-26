@@ -63,6 +63,9 @@ function migrateRsvpColumns(database: Database.Database): void {
   if (!columns.some((column) => column.name === "additional_names")) {
     database.exec("ALTER TABLE rsvps ADD COLUMN additional_names TEXT");
   }
+  if (!columns.some((column) => column.name === "afterparty")) {
+    database.exec("ALTER TABLE rsvps ADD COLUMN afterparty INTEGER");
+  }
 }
 
 /**

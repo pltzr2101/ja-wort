@@ -3,7 +3,7 @@ import { isGuestGateEnabled } from "@/lib/auth";
 import { requireAdmin, requireAnySession } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/rate-limit";
-import { deleteRsvp } from "@/lib/rsvps";
+import { deleteRsvp, updateRsvp } from "@/lib/rsvps";
 import { rsvpSchema } from "@/lib/validation";
 
 /**
@@ -46,8 +46,8 @@ export async function POST(req: NextRequest) {
   getDb()
     .prepare(
       `INSERT INTO rsvps
-        (name, attending, guests, additional_names, has_children, children_ages, needs_accommodation, note)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        (name, attending, guests, additional_names, has_children, children_ages, needs_accommodation, afterparty, note)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       data.name,
@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
         : data.needsAccommodation
           ? 1
           : 0,
+      data.afterparty === null || data.afterparty === undefined ? null : data.afterparty ? 1 : 0,
       data.note ?? null
     );
 
@@ -80,6 +81,45 @@ export async function DELETE(req: NextRequest) {
 
   const deleted = deleteRsvp(body.id);
   if (!deleted) {
+    return NextResponse.json({ error: "Anmeldung nicht gefunden." }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
+
+/** Aktualisiert eine Anmeldung anhand ihrer ID (nur Admin). */
+export async function PATCH(req: NextRequest) {
+  if (!requireAdmin(req)) {
+    return NextResponse.json({ error: "Nicht autorisiert." }, { status: 401 });
+  }
+
+  const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!body || typeof body !== "object" || typeof body.id !== "number") {
+    return NextResponse.json({ error: "Ungueltige Anfrage." }, { status: 400 });
+  }
+
+  const parsed = rsvpSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Bitte ueberpruefe deine Eingaben.", details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const data = parsed.data;
+  const updated = updateRsvp(body.id, {
+    name: data.name,
+    attending: data.attending === "yes",
+    guests: data.guests ?? null,
+    additionalNames: data.additionalNames ?? null,
+    hasChildren: data.hasChildren ?? null,
+    childrenAges: data.childrenAges ?? null,
+    needsAccommodation: data.needsAccommodation ?? null,
+    afterparty: data.afterparty ?? null,
+    note: data.note ?? null,
+  });
+
+  if (!updated) {
     return NextResponse.json({ error: "Anmeldung nicht gefunden." }, { status: 404 });
   }
 

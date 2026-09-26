@@ -69,4 +69,24 @@ describe("rsvpSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("akzeptiert die Afterparty-Angabe als optional (true, false oder leer)", () => {
+    const base = { name: "Max", attending: "yes", guests: 2, hasChildren: false };
+
+    expect(rsvpSchema.safeParse({ ...base, afterparty: true, website: "" }).success).toBe(true);
+    expect(rsvpSchema.safeParse({ ...base, afterparty: null, website: "" }).success).toBe(true);
+    expect(rsvpSchema.safeParse({ ...base, website: "" }).success).toBe(true);
+  });
+
+  it("lehnt einen ungueltigen afterparty-Wert ab", () => {
+    const result = rsvpSchema.safeParse({
+      name: "Max",
+      attending: "yes",
+      guests: 2,
+      hasChildren: false,
+      afterparty: "ja",
+      website: "",
+    });
+    expect(result.success).toBe(false);
+  });
 });

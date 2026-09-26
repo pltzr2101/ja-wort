@@ -11,6 +11,7 @@ interface RsvpRow {
   has_children: number | null;
   children_ages: string | null;
   needs_accommodation: number | null;
+  afterparty: number | null;
   note: string | null;
   created_at: string;
 }
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
   const rows = getDb()
     .prepare(
       `SELECT name, attending, guests, additional_names, has_children, children_ages,
-              needs_accommodation, note, created_at
+              needs_accommodation, afterparty, note, created_at
        FROM rsvps ORDER BY id DESC`
     )
     .all() as RsvpRow[];
@@ -39,6 +40,7 @@ export async function GET(req: NextRequest) {
     "Unterkunft-Hilfe",
     "Notiz",
     "Eingegangen",
+    "Afterparty",
   ];
 
   const lines = rows.map((row) =>
@@ -52,6 +54,7 @@ export async function GET(req: NextRequest) {
       row.needs_accommodation === null ? "" : row.needs_accommodation === 1 ? "Ja" : "Nein",
       row.note ?? "",
       row.created_at,
+      row.afterparty === null ? "" : row.afterparty === 1 ? "Ja" : "Nein",
     ]
       .map(escapeCsvCell)
       .join(";")

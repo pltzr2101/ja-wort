@@ -3,16 +3,27 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { RsvpRow } from "@/lib/rsvps";
+import RsvpEditForm from "./RsvpEditForm";
 
 interface Props {
   initial: RsvpRow[];
 }
 
-/** Tabelle aller Anmeldungen mit Loesch-Funktion (rotes X + Bestaetigung). */
+/** Tabelle aller Anmeldungen mit Loesch- und Bearbeiten-Funktion. */
 export default function RsvpTable({ initial }: Props) {
   const router = useRouter();
   const [rows, setRows] = useState<RsvpRow[]>(initial);
+  const [editing, setEditing] = useState<RsvpRow | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Nach einem Bearbeiten (router.refresh) liefert der Server neue `initial`-
+  // Daten; dann den lokalen Zustand auf den aktuellen Stand bringen (React-
+  // Muster "state during render", wie in ContentForm).
+  const [syncKey, setSyncKey] = useState(initial);
+  if (syncKey !== initial) {
+    setSyncKey(initial);
+    setRows(initial);
+  }
 
   async function handleDelete(id: number) {
     if (!window.confirm("Möchtest du diese Anmeldung wirklich löschen?")) return;
@@ -58,6 +69,7 @@ export default function RsvpTable({ initial }: Props) {
                 <th className="px-4 py-3 font-medium">Weitere Personen</th>
                 <th className="px-4 py-3 font-medium">Kinder</th>
                 <th className="px-4 py-3 font-medium">Unterkunft</th>
+                <th className="px-4 py-3 font-medium">Afterparty</th>
                 <th className="px-4 py-3 font-medium">Notiz</th>
                 <th className="px-4 py-3 font-medium">Eingegangen</th>
                 <th className="px-4 py-3 font-medium">
@@ -96,24 +108,49 @@ export default function RsvpTable({ initial }: Props) {
                         ? "Ja"
                         : "Nein"}
                   </td>
+                  <td className="px-4 py-3">
+                    {rsvp.afterparty === null ? "–" : rsvp.afterparty ? "Ja" : "Nein"}
+                  </td>
                   <td className="max-w-xs px-4 py-3">{rsvp.note ?? "–"}</td>
                   <td className="px-4 py-3 text-muted">{rsvp.createdAt}</td>
                   <td className="px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(rsvp.id)}
-                      className="rounded-lg border border-border px-2 text-red-600 transition hover:bg-red-50"
-                      aria-label={`Anmeldung von ${rsvp.name} löschen`}
-                      title="Löschen"
-                    >
-                      ✕
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditing(rsvp)}
+                        className="rounded-lg border border-border px-2 text-muted transition hover:bg-accent/10 hover:text-accent"
+                        aria-label={`Bearbeiten: ${rsvp.name}`}
+                        title="Bearbeiten"
+                      >
+                        ✎
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(rsvp.id)}
+                        className="rounded-lg border border-border px-2 text-red-600 transition hover:bg-red-50"
+                        aria-label={`Anmeldung von ${rsvp.name} löschen`}
+                        title="Löschen"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {editing && (
+        <RsvpEditForm
+          rsvp={editing}
+          onCancel={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            router.refresh();
+          }}
+        />
       )}
     </div>
   );
