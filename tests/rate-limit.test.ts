@@ -63,8 +63,12 @@ describe("clientKey", () => {
     expect(clientKey(req)).toBe("198.51.100.2");
   });
 
-  it("liefert unknown ohne identifizierenden Header", () => {
-    expect(clientKey(new Request("http://localhost/api"))).toBe("unknown");
+  it("liefert pro Anfrage einen eigenen Schluessel ohne identifizierenden Header", () => {
+    const a = clientKey(new Request("http://localhost/api"));
+    const b = clientKey(new Request("http://localhost/api"));
+    expect(a).toMatch(/^anonymous:/);
+    expect(b).toMatch(/^anonymous:/);
+    expect(a).not.toBe(b);
   });
 });
 
