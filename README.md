@@ -14,7 +14,7 @@ Entwickelt fuer einfaches Deployment auf einem Proxmox-LXC ueber Portainer.
 
 | Bereich   | Technologie                                      |
 | --------- | ------------------------------------------------ |
-| Frontend  | Next.js 15 (App Router) + Tailwind CSS v4        |
+| Frontend  | Next.js 16 (App Router) + Tailwind CSS v4        |
 | Backend   | Next.js Route Handlers (API)                     |
 | Datenbank | SQLite (better-sqlite3, eingebettet)             |
 | Auth      | Signierte httpOnly-Cookies, scrypt-Passwort-Hash |
@@ -173,3 +173,28 @@ Neue Schrift-Schnitte werden als woff2 unter `fonts/` abgelegt und in
 - **`.github/workflows/publish.yml`** – Image-Push nach GHCR auf `main` + Tags.
 
 Der Status ist im GitHub-Repository unter dem Reiter **Actions** einsehbar.
+
+### Versionsverlauf & Image-Tags
+
+Der Versionsverlauf wird über **SemVer-Git-Tags** geführt (Richtlinie in
+[AGENTS.md](./AGENTS.md)): Conventional-Commit-Typ bestimmt MAJOR/MINOR/PATCH,
+das letzte `v*`-Tag ist die „zuletzt stabil"-Marke. Alle Releases sind im
+Repository unter _Tags_ einsehbar (`git fetch --tags && git tag -l`).
+
+Ein `v*`-Tag triggert die `publish.yml` und veröffentlicht neben `latest` und
+`sha-<kurz>` zusätzlich die semver-Git-Tags als Image-Tags:
+
+**Tags im Überblick:**
+
+| Tag             | Bedeutung                                                               |
+| --------------- | ----------------------------------------------------------------------- |
+| `X.Y.Z` / `X.Y` | SemVer-Release — existiert nur bei getaggten Releases (Versionsverlauf) |
+| `latest`        | neuester Stand von `main` — das ist das Image, das Watchtower zieht     |
+| `sha-<kurz>`    | exakter Commit                                                          |
+
+**Versionierung:** SemVer nach [AGENTS.md](./AGENTS.md) — Einstufung
+(MAJOR/MINOR/PATCH) aus der Conventional-Commit-Message; das letzte
+`v*`-Tag ist die „zuletzt stabil"-Marke. Reihenfolge in Portainer/Watchtower:
+Commit → CI baut `latest` → Watchtower zieht zum nächsten Intervall; für ein
+gepinntes Release das semver-Tag-Image (`ghcr.io/pltzr2101/ja-wort:X.Y.Z`)
+deployen.
