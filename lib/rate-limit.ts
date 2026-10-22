@@ -2,6 +2,7 @@
  * Einfacher In-Memory Fixed-Window-Rate-Limiter.
  * Fuer den Betrieb als einzelner Container (eine Instanz) ausreichend.
  */
+import crypto from "node:crypto";
 
 interface Bucket {
   count: number;
@@ -29,13 +30,21 @@ function firstValue(header: string | null): string | null {
  *
  * Leere Header-Werte werden uebersprungen, damit ein leerer `X-Forwarded-For`
  * nicht alle Clients in einem gemeinsamen Bucket zusammenfasst.
+ *
+ * Ohne Forwarding-Header (direkter Zugriff ohne Proxy) bekommt jede Anfrage
+ * einen eigenen Bucket-Schluessel. Ein einzelner Angreifer kann so also
+ * NICHT mehr alle legitimen Clients in einen gemeinsamen "unknown"-Bucket
+ * pressen und deren Login-Attempts leerlaufen lassen. Der Preis: Solche
+ * Anfragen sind damit de facto nicht mehr rate-limited – vertretbar, weil der
+ * Container ohne Proxy ohnehin nicht erreichbar sein darf (siehe Vertrauens-
+ * modell oben). Angelegte Buckets werden wie gehabt periodisch gepruned.
  */
 export function clientKey(req: Request): string {
   return (
     firstValue(req.headers.get("x-forwarded-for")) ??
     firstValue(req.headers.get("x-real-ip")) ??
     firstValue(req.headers.get("cf-connecting-ip")) ??
-    "unknown"
+    `anonymous:${crypto.randomUUID()}`
   );
 }
 
