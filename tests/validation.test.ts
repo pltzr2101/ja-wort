@@ -1,5 +1,59 @@
 import { describe, expect, it } from "vitest";
-import { rsvpSchema } from "@/lib/validation";
+import { defaultContent } from "@/content/default";
+import { rsvpSchema, siteContentSchema } from "@/lib/validation";
+
+describe("siteContentSchema", () => {
+  it("akzeptiert den vollstaendigen Default-Inhaltssatz", () => {
+    expect(siteContentSchema.safeParse(defaultContent).success).toBe(true);
+  });
+
+  it("akzeptiert einen Teil-Inhaltssatz (nur ein Feld)", () => {
+    const result = siteContentSchema.safeParse({ heroTitle: "Neuer Titel" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data).toEqual({ heroTitle: "Neuer Titel" });
+  });
+
+  it("entfernt unbekannte Felder stillschweigend", () => {
+    const result = siteContentSchema.safeParse({ heroTitle: "Hi", hackerPayload: "<script>" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data).not.toHaveProperty("hackerPayload");
+  });
+
+  it("lehnt einen ungueltigen theme-Wert ab", () => {
+    expect(siteContentSchema.safeParse({ theme: "neon" }).success).toBe(false);
+  });
+
+  it("lehnt schedule mit falschem Typ ab", () => {
+    expect(siteContentSchema.safeParse({ schedule: { time: "12:00" } }).success).toBe(false);
+    expect(siteContentSchema.safeParse({ schedule: [{ time: 123 }] }).success).toBe(false);
+  });
+
+  it("lehnt eine Sektion mit ungueltigem type ab", () => {
+    const result = siteContentSchema.safeParse({
+      sections: [{ key: "x", type: "evil", enabled: true }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("akzeptiert gueltige Sektionen inkl. optionaler Felder", () => {
+    const result = siteContentSchema.safeParse({
+      sections: [
+        { key: "hero", type: "hero", enabled: true },
+        {
+          key: "img-1",
+          type: "image",
+          enabled: false,
+          imageId: null,
+          caption: "Bild",
+          objectPosition: "center",
+          objectFit: "cover",
+        },
+        { key: "text-1", type: "text", enabled: true, title: "Story", text: "Text" },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+});
 
 describe("rsvpSchema", () => {
   it("akzeptiert eine Absage ohne bedingte Felder", () => {
