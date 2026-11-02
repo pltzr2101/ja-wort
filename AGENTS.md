@@ -62,3 +62,40 @@ git push origin v1.1.0
 `v*`-Tags triggern `.github/workflows/publish.yml`; die Registry erhält dann
 zusätzlich `:X.Y.Z` und `:X.Y` zu `latest` / `sha-<kurz>`. Watchtower zieht
 `latest` bei Bedarf; `sha-<kurz>` zeigt den exakten Stand in Portainer.
+
+## Entwicklung & Befehle
+
+Node.js **26** (so laufen CI und Dockerfile; das README nennt noch 22 – veraltet).
+Alle Befehle unten sind verifiziert:
+
+```bash
+npm ci               # Install
+cp .env.example .env # Dev-Passwörter eintragen
+npm run dev          # Dev-Server, http://localhost:3000
+npm run lint         # ESLint
+npm run format       # Prettier schreiben
+npm run format:check # Prettier prüfen (CI-Check)
+npm test             # Vitest (jsdom), tests/ außer tests/e2e
+npm run build        # Produktions-Build
+npm run test:e2e     # Playwright, braucht laufenen Server unter BASE_URL (Default http://localhost:3000)
+```
+
+CI (`.github/workflows/ci.yml`) führt bei jedem Push/PR `lint` → `format:check`
+→ `test` → `build` aus, `docker.yml` zusätzlich das Image – vor dem Push müssen
+alle grün sein.
+
+### Stil & Gotchas
+
+- `.prettierrc`: doppelte Anführungszeichen, `printWidth: 100`, `tabWidth: 2`.
+  Ungeformter Code bricht `format:check` in CI → `npm run format` vor dem Commit.
+- Bereits hochgeladene Bilder werden bewusst per `<img>` ausgeliefert, nicht
+  `next/image` (das lädt serverseitig ohne Cookies und würde die Auth umgehen).
+  Die ESLint-Regel `@next/next/no-img-element` ist deshalb deaktiviert – nicht
+  „reparieren".
+- Fonts sind self-hosted (`fonts/*.woff2` via `next/font/local` in
+  `app/layout.tsx`); nie `next/font/google` verwenden, sonst bricht der
+  Offline-Build in CI/Docker.
+- `DATA_DIR` (Env, Default `./data`, siehe `lib/paths.ts`) bestimmt, wo
+  SQLite-DB (`wedding.db`) und Uploads liegen. Er steht nicht in `.env.example`;
+  `tests/setup.ts` setzt ihn auf ein Temp-Verzeichnis, Tests schreiben nie ins
+  echte `./data`.
